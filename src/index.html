@@ -17,6 +17,7 @@
         <input id="attackselector" list="attackunits" x-model="attackUnit" @input.debounce="
             if (isUnit(attackUnit)) {
                 attackUnits.push(attackUnit);
+                document.getElementById('attackselector').value = '';
             }
         "/>
         <datalist id="attackunits">
