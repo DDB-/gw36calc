@@ -10,16 +10,36 @@
 </head>
 <body>
     <div x-data="{
+            availableUnits: getUnits(),
             attackUnits: [],
             attackUnit: ''
         }">
-        <input id="attackselector" list="attackunits" x-model="attackUnit" @input.debounce="addUnit('attack',attackUnit)"/>
+        <input id="attackselector" list="attackunits" x-model="attackUnit" @input.debounce="
+            if (isUnit(attackUnit)) {
+                attackUnits.push(attackUnit);
+            }
+        "/>
         <datalist id="attackunits">
             <template x-for="unit in getUnits()">
                 <option x-bind:value="unit" x-text="unit">
             </template>
-        </datalist>
+        </datalist><br>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Attacking Unit</th>
+                    <th scope="col">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="aunit in attackUnits">
+                    <tr>
+                        <th scope="row" x-text="aunit">
+                        <td>1</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
     </div>
 </body>
-<script src="js/events.js"></script>
 </html>
