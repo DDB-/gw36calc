@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="js/units.js"></script>
+  <script src="js/includes/htmx.min.js"></script>
+  <script defer src="js/includes/alpine.min.js"></script>
+  <title>Global War '36 Calculator</title>
+</head>
+<body>
+    <div x-data="{
+            attackUnits: [],
+            attackUnit: ''
+        }">
+        <input id="attackselector" list="attackunits" x-model="attackUnit" @input.debounce="addUnit('attack',attackUnit)"/>
+        <datalist id="attackunits">
+            <template x-for="unit in getUnits()">
+                <option x-bind:value="unit" x-text="unit">
+            </template>
+        </datalist>
+    </div>
+</body>
+<script src="js/events.js"></script>
+</html>
