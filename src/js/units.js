@@ -39,3 +39,19 @@ function getUnitIndex(unit, unitList) {
     }
     return -1;
 }
+
+function getUnitType(unit) {
+    if (infantry.indexOf(unit) != -1) {
+        return 'Infantry';
+    } else if (artillery.indexOf(unit) != -1) {
+        return 'Artillery';
+    } else if (vehicles.indexOf(unit) != -1) {
+        return 'Vehicle';
+    } else if (planes.indexOf(unit) != -1) {
+        return 'Plane';
+    } else if (boats.indexOf(unit) != -1) {
+        return 'Boat';
+    }
+
+    return "Invalid";
+}

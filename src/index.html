@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style/main.css">
+  <script src="js/calculator.js"></script>
   <script src="js/units.js"></script>
   <script src="js/includes/htmx.min.js"></script>
   <script defer src="js/includes/alpine.min.js"></script>
   <title>Global War '36 Calculator</title>
 </head>
 <body>
-    <div class="flex-parent" x-data="{
+    <div class="top-level" x-data="{
             availableUnits: getUnits(),
             attackUnits: [],
             attackUnitsQ: [],
@@ -19,107 +20,114 @@
             defendUnitsQ: [],
             defendUnit: ''
         }">
-        <div class="flex-sides">
-            <h1 class="title">Attacker</h1>
-            <input class="unit-input" id="attackselector" list="attackunits" 
-                x-model="attackUnit" @input.debounce="
-                if (isUnit(attackUnit)) {
-                    let unitIndex = getUnitIndex(attackUnit, attackUnits);
-                    console.log(unitIndex);
-                    if (unitIndex === -1) {
-                        attackUnits.push(attackUnit);
-                        attackUnitsQ.push(1);
-                    } else {
-                        attackUnitsQ[unitIndex] += 1;
+        <div class="flex-parent">
+            <div class="flex-sides">
+                <h1 class="title">Attacker</h1>
+                <input class="unit-input" id="attackselector" list="attackunits" 
+                    x-model="attackUnit" @input.debounce="
+                    if (isUnit(attackUnit)) {
+                        let unitIndex = getUnitIndex(attackUnit, attackUnits);
+                        console.log(unitIndex);
+                        if (unitIndex === -1) {
+                            attackUnits.push(attackUnit);
+                            attackUnitsQ.push(1);
+                        } else {
+                            attackUnitsQ[unitIndex] += 1;
+                        }
+                        document.getElementById('attackselector').value = '';
                     }
-                    document.getElementById('attackselector').value = '';
-                }
-            "/>
-            <datalist id="attackunits">
-                <template x-for="unit in getUnits()">
-                    <option x-bind:value="unit" x-text="unit">
-                </template>
-            </datalist><br>
-            <table>
-                <thead>
-                    <tr>
-                        <th scope="col">Attacking Unit</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">(0 = Delete)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(aunit, index) in attackUnits">
-                        <tr>
-                            <th scope="row" x-text="aunit">
-                            <td x-text="attackUnitsQ[index]">
-                            <td>
-                                <input type="button" value="+" x-on:click="
-                                    attackUnitsQ[index] += 1;
-                                ">
-                                <input type="button" value="-" x-on:click="
-                                    attackUnitsQ[index] -= 1;
-                                    if (attackUnitsQ[index] === 0) {
-                                        attackUnitsQ.splice(index, 1);
-                                        attackUnits.splice(index, 1);
-                                    }
-                                ">
-                            </td>
-                        </tr>
+                "/>
+                <datalist id="attackunits">
+                    <template x-for="unit in getUnits()">
+                        <option x-bind:value="unit" x-text="unit">
                     </template>
-                </tbody>
-            </table>
+                </datalist><br>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Attacking Unit</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">(0 = Delete)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(aunit, index) in attackUnits">
+                            <tr>
+                                <th scope="row" x-text="aunit">
+                                <td x-text="attackUnitsQ[index]">
+                                <td>
+                                    <input type="button" value="+" x-on:click="
+                                        attackUnitsQ[index] += 1;
+                                    ">
+                                    <input type="button" value="-" x-on:click="
+                                        attackUnitsQ[index] -= 1;
+                                        if (attackUnitsQ[index] === 0) {
+                                            attackUnitsQ.splice(index, 1);
+                                            attackUnits.splice(index, 1);
+                                        }
+                                    ">
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex-sides">
+                <h1 class="title">Defender</h1>
+                <input class="unit-input" id="defendselector" list="defendunits" 
+                    x-model="defendUnit" @input.debounce="
+                    if (isUnit(defendUnit)) {
+                        let unitIndex = getUnitIndex(defendUnit, defendUnits);
+                        console.log(unitIndex);
+                        if (unitIndex === -1) {
+                            defendUnits.push(defendUnit);
+                            defendUnitsQ.push(1);
+                        } else {
+                            defendUnitsQ[unitIndex] += 1;
+                        }
+                        document.getElementById('defendselector').value = '';
+                    }
+                "/>
+                <datalist id="defendunits">
+                    <template x-for="unit in getUnits()">
+                        <option x-bind:value="unit" x-text="unit">
+                    </template>
+                </datalist><br>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Defending Unit</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">(0 = Delete)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="(aunit, index) in defendUnits">
+                            <tr>
+                                <th scope="row" x-text="aunit">
+                                <td x-text="defendUnitsQ[index]">
+                                <td>
+                                    <input type="button" value="+" x-on:click="
+                                        defendUnitsQ[index] += 1;
+                                    ">
+                                    <input type="button" value="-" x-on:click="
+                                        defendUnitsQ[index] -= 1;
+                                        if (defendUnitsQ[index] === 0) {
+                                            defendUnitsQ.splice(index, 1);
+                                            defendUnits.splice(index, 1);
+                                        }
+                                    ">
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="flex-sides">
-            <h1 class="title">Defender</h1>
-            <input class="unit-input" id="defendselector" list="defendunits" 
-                x-model="defendUnit" @input.debounce="
-                if (isUnit(defendUnit)) {
-                    let unitIndex = getUnitIndex(defendUnit, defendUnits);
-                    console.log(unitIndex);
-                    if (unitIndex === -1) {
-                        defendUnits.push(defendUnit);
-                        defendUnitsQ.push(1);
-                    } else {
-                        defendUnitsQ[unitIndex] += 1;
-                    }
-                    document.getElementById('defendselector').value = '';
-                }
-            "/>
-            <datalist id="defendunits">
-                <template x-for="unit in getUnits()">
-                    <option x-bind:value="unit" x-text="unit">
-                </template>
-            </datalist><br>
-            <table>
-                <thead>
-                    <tr>
-                        <th scope="col">Defending Unit</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">(0 = Delete)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(aunit, index) in defendUnits">
-                        <tr>
-                            <th scope="row" x-text="aunit">
-                            <td x-text="defendUnitsQ[index]">
-                            <td>
-                                <input type="button" value="+" x-on:click="
-                                    defendUnitsQ[index] += 1;
-                                ">
-                                <input type="button" value="-" x-on:click="
-                                    defendUnitsQ[index] -= 1;
-                                    if (defendUnitsQ[index] === 0) {
-                                        defendUnitsQ.splice(index, 1);
-                                        defendUnits.splice(index, 1);
-                                    }
-                                ">
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
+        <div class="flex-parent">
+            <input class="flex-button" type="button" value="Calculate", x-on:click="
+                simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ);
+            ">
         </div>
     </div>
 </body>
