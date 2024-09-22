@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="style/main.css">
   <script src="js/units.js"></script>
   <script src="js/includes/htmx.min.js"></script>
   <script defer src="js/includes/alpine.min.js"></script>
@@ -12,11 +13,19 @@
     <div x-data="{
             availableUnits: getUnits(),
             attackUnits: [],
+            attackUnitsQ: [],
             attackUnit: ''
         }">
         <input id="attackselector" list="attackunits" x-model="attackUnit" @input.debounce="
             if (isUnit(attackUnit)) {
-                attackUnits.push(attackUnit);
+                let unitIndex = getUnitIndex(attackUnit, attackUnits);
+                console.log(unitIndex);
+                if (unitIndex === -1) {
+                    attackUnits.push(attackUnit);
+                    attackUnitsQ.push(1);
+                } else {
+                    attackUnitsQ[unitIndex] += 1;
+                }
                 document.getElementById('attackselector').value = '';
             }
         "/>
@@ -30,13 +39,26 @@
                 <tr>
                     <th scope="col">Attacking Unit</th>
                     <th scope="col">Quantity</th>
+                    <th scope="col">(0 = Delete)</th>
                 </tr>
             </thead>
             <tbody>
-                <template x-for="aunit in attackUnits">
+                <template x-for="(aunit, index) in attackUnits">
                     <tr>
                         <th scope="row" x-text="aunit">
-                        <td>1</td>
+                        <td x-text="attackUnitsQ[index]">
+                        <td>
+                            <input class="addsubtract" type="button" value="+" x-on:click="
+                                attackUnitsQ[index] += 1;
+                            ">
+                            <input class="addsubtract" type="button" value="-" x-on:click="
+                                attackUnitsQ[index] -= 1;
+                                if (attackUnitsQ[index] === 0) {
+                                    attackUnitsQ.splice(index, 1);
+                                    attackUnits.splice(index, 1);
+                                }
+                            ">
+                        </td>
                     </tr>
                 </template>
             </tbody>

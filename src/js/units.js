@@ -30,3 +30,12 @@ function getUnits() {
 function isUnit(unit) {
     return (units.indexOf(unit) != -1);
 }
+
+function getUnitIndex(unit, unitList) {
+    for (let i = 0; i < unitList.length; i++) {
+        if (unit === unitList[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
