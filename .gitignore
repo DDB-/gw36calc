@@ -1,2 +1,3 @@
 src/js/includes/*
 deploy.sh
+node_modules/*
