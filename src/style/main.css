@@ -1,5 +1,23 @@
-.addsubtract {
-    display:inline-block;
-    width: 80px;
-    height: 40px;
+.flex-parent {
+    display: flex;
+    width: 50%;
+    justify-content: center;
+}
+
+.flex-side {
+    flex: 1;
+    margin: 10px;
+}
+
+.flex-side:first-child {
+    margin-right: 20px;
+}
+
+.title {
+    text-align: center;
+}
+
+.unit-input {
+    display: block;
+    margin: 0 auto;
 }
