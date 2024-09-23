@@ -1,5 +1,5 @@
-const script = (url) => {
-    return require('fs').readFileSync(`${process.cwd()}/${url}`, 'UTF8');
+const script = (path) => {
+    return require('fs').readFileSync(`${process.cwd()}/${path}`, 'UTF8');
 };
 
 eval(script('src/js/units.js'));
