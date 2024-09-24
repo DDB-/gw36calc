@@ -57,7 +57,7 @@ function getUnitType(unit) {
 }
 
 function getUnitDetails(unit) {
-    let details = new Map();
+    const details = new Map();
     switch(unit) {
         case 'Militia':
             details.set('Attack', 1);

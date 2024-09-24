@@ -16,21 +16,77 @@ test('100 rolls always falls between 1 and 12', () => {
 test('army constructed with full unit details', () => {
     const units = ['Infantry', 'Artillery', 'Militia'];
     const quantities = [4, 2, 3];
-    const army = constructArmy(units, quantities);
+    const army = makeArmy(units, quantities, 'Attack');
 
-    expect(army.length).toBe(3);
-    expect(army[0].name).toBe('Infantry');
-    expect(army[0].unitClass).toBe('Infantry');
-    expect(army[0].details.get('Attack')).toBe(2);
-    expect(army[0].details.get('Defend')).toBe(4);
+    expect(army.units.length).toBe(3);
+    expect(army.side).toBe('Attack');
 
-    expect(army[1].name).toBe('Artillery');
-    expect(army[1].unitClass).toBe('Artillery');
-    expect(army[1].details.get('Attack')).toBe(3);
-    expect(army[1].details.get('Defend')).toBe(3);
+    expect(army.units[0].name).toBe('Infantry');
+    expect(army.units[0].unitClass).toBe('Infantry');
+    expect(army.units[0].quantity).toBe(4);
+    expect(army.units[0].details.get('Attack')).toBe(2);
+    expect(army.units[0].details.get('Defend')).toBe(4);
 
-    expect(army[2].name).toBe('Militia');
-    expect(army[2].unitClass).toBe('Infantry');
-    expect(army[2].details.get('Attack')).toBe(1);
-    expect(army[2].details.get('Defend')).toBe(2);
+    expect(army.units[1].name).toBe('Artillery');
+    expect(army.units[1].unitClass).toBe('Artillery');
+    expect(army.units[1].quantity).toBe(2);
+    expect(army.units[1].details.get('Attack')).toBe(3);
+    expect(army.units[1].details.get('Defend')).toBe(3);
+
+    expect(army.units[2].name).toBe('Militia');
+    expect(army.units[2].unitClass).toBe('Infantry');
+    expect(army.units[2].quantity).toBe(3);
+    expect(army.units[2].details.get('Attack')).toBe(1);
+    expect(army.units[2].details.get('Defend')).toBe(2);
+});
+
+test('calculate army ipp', () => {
+    const army = makeArmy(['Infantry', 'Militia'], [6,2], 'Attack');
+    // 6 * 3 + 2 * 2 = 22
+    expect(calculateIpps(army)).toBe(22);
+
+    const emptyArmy = makeArmy([],[],'Defend');
+    expect(calculateIpps(emptyArmy))
+        .toBeDefined()
+        .toBe(0);
+});
+
+test('army reconciles by simple cost metric', () => {
+    let army = makeArmy(['Infantry', 'Militia'], [6,2], 'Attack');
+    let hits = makeHits();
+
+    hits.hits = 1;
+    reconcileArmy(army, hits);
+
+    expect(army.units.length).toBe(2);
+    expect(army.units[0].name).toBe('Militia');
+    expect(army.units[0].quantity).toBe(1);
+    expect(army.units[1].name).toBe('Infantry');
+    expect(army.units[1].quantity).toBe(6);
+
+    hits.hits = 2;
+    reconcileArmy(army, hits);
+    expect(army.units.length).toBe(1);
+    expect(army.units[0].name).toBe('Infantry');
+    expect(army.units[0].quantity).toBe(5);
+
+    hits.hits = 5;
+    reconcileArmy(army, hits);
+    expect(army.units.length).toBe(0);
+});
+
+test('winner determined correctly and works with extra hits', () => {
+    let attack = makeArmy(['Infantry', 'Artillery'], [6,2], 'Attack');
+    let defend = makeArmy(['Militia'], [1], 'Defend');
+    let battle = makeBattle(attack, defend);
+
+    expect(hasWinner(battle)).toBe(false);
+    expect(battle.winner).toBeFalsy();
+
+    let hits = makeHits()
+    hits.hits = 3;
+    reconcileArmy(battle.defend, hits);
+
+    expect(hasWinner(battle)).toBe(true);
+    expect(battle.winner).toBe('Attack');
 });
