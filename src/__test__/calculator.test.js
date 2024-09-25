@@ -90,3 +90,18 @@ test('winner determined correctly and works with extra hits', () => {
     expect(hasWinner(battle)).toBe(true);
     expect(battle.winner).toBe('Attack');
 });
+
+test('stats object works as expected', () => {
+    const stats = makeStats(10);
+    stats.attackIppLost = [3, 0, 6, 19, 6, 3, 9, 19, 6, 6];
+    stats.defendIppLost = [8, 8, 8, 4, 8, 8, 8, 6, 8, 8];
+    stats.attackWins = 8;
+    stats.defendWins = 2;
+
+    expect(stats.meanLoss('Defend')).toBe(8);
+    expect(stats.meanLoss('Attack')).toBe(6);
+    expect(stats.winPercent('Defend')).toBe(20);
+    expect(stats.winPercent('Attack')).toBe(80);
+    expect(stats.avgLoss('Defend')).toBeCloseTo(7.4);
+    expect(stats.avgLoss('Attack')).toBeCloseTo(7.7);
+});

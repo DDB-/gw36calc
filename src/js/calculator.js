@@ -27,6 +27,47 @@ function calculateIpps(army) {
     return ippValue;
 }
 
+class Stats {
+    constructor(rounds) {
+        this.rounds = rounds;
+        this.ties = 0;
+        this.attackWins = 0;
+        this.defendWins = 0;
+        this.attackIppLost = [];
+        this.defendIppLost = [];
+    };
+
+    avgLoss(side) {
+        if (side == 'Attack') {
+            return this.attackIppLost.reduce((a,b) => a + b) / this.rounds;
+        } else {
+            return this.defendIppLost.reduce((a,b) => a + b) / this.rounds;
+        }
+    }
+
+    meanLoss(side) {
+        if (side == 'Attack') {
+            this.attackIppLost.sort((a,b) => a - b);
+            return this.attackIppLost[this.rounds/2];
+        } else {
+            this.defendIppLost.sort((a,b) => a - b);
+            return this.defendIppLost[this.rounds/2];
+        }
+    }
+
+    winPercent(side) {
+        if (side == 'Attack') {
+            return this.attackWins / this.rounds * 100;
+        } else {
+            return this.defendWins / this.rounds * 100;
+        }
+    }
+}
+
+function makeStats(rounds) {
+    return new Stats(rounds);
+}
+
 class Battle {
     constructor(attack, defend) {
         this.attack = attack;
@@ -111,25 +152,48 @@ function hasWinner(battle) {
     return true;
 }
 
-function rollBattle(battle) {
+function rollBattle(battle, stats) {
     while(!hasWinner(battle)) {
         let attackHits = rollRoundForSide(battle.attack, 'Attack');
         let defendHits = rollRoundForSide(battle.defend, 'Defend');
-        console.log(`Round ${battle.round}`);
-        console.log(`Attack hits: ${attackHits.hits}`);
-        console.log(`Defend hits: ${defendHits.hits}`);
         reconcileArmy(battle.attack, defendHits);
         reconcileArmy(battle.defend, attackHits);
         battle.round += 1;
     }
-    console.log(`${battle.winner} is the winner!`);
-    console.log(battle);
+    updateStats(battle, stats);
+}
+
+function updateStats(battle, stats) {
+    if (battle.winner == 'Defend') {
+        stats.defendIppLost.push(
+            battle.ippValues.startingDefend - battle.ippValues.endingDefend
+        );
+        stats.attackIppLost.push(battle.ippValues.startingAttack);
+        stats.defendWins += 1;
+    } else if (battle.winner == 'Attack') {
+        stats.attackIppLost.push(
+            battle.ippValues.startingAttack - battle.ippValues.endingAttack
+        );
+        stats.defendIppLost.push(battle.ippValues.startingDefend);
+        stats.attackWins += 1;
+    } else {
+        stats.ties += 1;
+        stats.defendIppLost.push(battle.ippValues.startingDefend);
+        stats.attackIppLost.push(battle.ippValues.startingAttack);
+    }
 }
 
 function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ) {
-    const battle = new Battle(
-        new Army(attackUnits, attackUnitsQ, 'Attack'),
-        new Army(defendUnits, defendUnitsQ, 'Defend')
-    );
-    rollBattle(battle);
+    const rounds = 1000;
+    const stats = new Stats(rounds);
+    for (let i = 0; i < stats.rounds; i++) {
+        const battle = new Battle(
+            new Army(attackUnits, attackUnitsQ, 'Attack'),
+            new Army(defendUnits, defendUnitsQ, 'Defend')
+        );
+        rollBattle(battle, stats);
+    }
+    console.log(`Attacker won ${stats.attackWins} times, losing AVG:${stats.avgLoss('Attack')}, MEAN:${stats.meanLoss('Attack')}`);
+    console.log(`Defender won ${stats.defendWins} times, losing AVG:${stats.avgLoss('Defend')}, MEAN:${stats.meanLoss('Defend')}`);
+    console.log(`There were ${stats.ties} ties`);
 }
