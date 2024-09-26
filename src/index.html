@@ -22,7 +22,9 @@
             attackUnit: '',
             defendUnits: [],
             defendUnitsQ: [],
-            defendUnit: ''
+            defendUnit: '',
+            showResult: false,
+            stats: makeStats(1000),
         }">
         <div class="flex-parent">
             <div class="flex-sides">
@@ -130,8 +132,33 @@
         </div>
         <div class="flex-parent">
             <input class="flex-button" type="button" value="Calculate", x-on:click="
-                simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ);
+                stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ);
+                showResult = true;
             ">
+        </div>
+        <div class="flex-parent">
+            <div class="flex-result-container" x-show="showResult">
+                <div class="flex-row-box">
+                    <div class="row attack percent-win" x-text="stats.winDisplay('Attack')"></div>
+                    <div class="row defend percent-win" x-text="stats.winDisplay('Defend')"></div>
+                </div>
+                <div class="flex-row-box">
+                    <div class="row attack loss-header">Average Losses</div>
+                    <div class="row defend loss-header">Average Losses</div>
+                </div>
+                <div class="flex-row-box">
+                    <div class="row attack losses" x-text="stats.avgLossDisplay('Attack')"></div>
+                    <div class="row defend losses" x-text="stats.avgLossDisplay('Defend')"></div>
+                </div>
+                <div class="flex-row-box">
+                    <div class="row attack loss-header">Mean Losses</div>
+                    <div class="row defend loss-header">Mean Losses</div>
+                </div>
+                <div class="flex-row-box">
+                    <div class="row attack losses" x-text="stats.meanLoss('Attack')"></div>
+                    <div class="row defend losses" x-text="stats.meanLoss('Defend')"></div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

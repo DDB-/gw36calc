@@ -1,6 +1,6 @@
 .flex-parent {
     display: flex;
-    width: 50%;
+    width: 70%;
     justify-content: center;
 }
 
@@ -15,6 +15,57 @@
 
 .flex-button {
     flex: 0 0 50%;
+}
+
+.flex-result-container {
+    width: 100%;
+    display: block;
+}
+
+.flex-row-box {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    flex-shrink: 0;
+    width: 48%;
+}
+
+.attack {
+    justify-content: right;
+}
+
+.defend {
+    justify-content: left;
+}
+
+.percent-win {
+    height: 80px;
+    font-size: 3rem;
+}
+
+.losses {
+    height: 50px;
+    font-size: 2rem;
+}
+
+.loss-header {
+    font-size: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    body {
+        overflow-x: auto;
+    }
+
+    .container {
+        width: 120%;
+    }
 }
 
 .title {

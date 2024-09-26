@@ -27,6 +27,13 @@ function calculateIpps(army) {
     return ippValue;
 }
 
+function roundForDisplay(value) {
+    if (value % 1 != 0) {
+        return value.toFixed(2);
+    }
+    return value;
+}
+
 class Stats {
     constructor(rounds) {
         this.rounds = rounds;
@@ -38,6 +45,9 @@ class Stats {
     };
 
     avgLoss(side) {
+        if (this.attackIppLost.length === 0) {
+            return 0;
+        }
         if (side == 'Attack') {
             return this.attackIppLost.reduce((a,b) => a + b) / this.rounds;
         } else {
@@ -46,6 +56,9 @@ class Stats {
     }
 
     meanLoss(side) {
+        if (this.attackIppLost.length === 0) {
+            return 0;
+        }
         if (side == 'Attack') {
             this.attackIppLost.sort((a,b) => a - b);
             return this.attackIppLost[this.rounds/2];
@@ -62,6 +75,15 @@ class Stats {
             return this.defendWins / this.rounds * 100;
         }
     }
+
+    winDisplay(side) {
+        return roundForDisplay(this.winPercent(side)) + "%";
+    }
+
+    avgLossDisplay(side) {
+        return roundForDisplay(this.avgLoss(side));
+    }
+
 }
 
 function makeStats(rounds) {
@@ -163,8 +185,8 @@ function rollBattle(battle, stats) {
     while(!hasWinner(battle)) {
         let attackHits = rollRoundForSide(battle.attack, 'Attack');
         let defendHits = rollRoundForSide(battle.defend, 'Defend');
-        reconcileArmy(battle.attack);
-        reconcileArmy(battle.defend);
+        reconcileArmy(battle.attack, defendHits);
+        reconcileArmy(battle.defend, attackHits);
         battle.round += 1;
     }
     updateStats(battle, stats);
@@ -203,4 +225,5 @@ function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ) {
     console.log(`Attacker won ${stats.attackWins} times, losing AVG:${stats.avgLoss('Attack')}, MEAN:${stats.meanLoss('Attack')}`);
     console.log(`Defender won ${stats.defendWins} times, losing AVG:${stats.avgLoss('Defend')}, MEAN:${stats.meanLoss('Defend')}`);
     console.log(`There were ${stats.ties} ties`);
+    return stats;
 }
