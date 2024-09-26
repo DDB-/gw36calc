@@ -99,17 +99,24 @@ function roll() {
     return Math.floor(Math.random() * 12) + 1;
 }
 
-function rollRoundForSide(army, side) {
+function rollRoundForSide(army) {
     const hits = new Hits();
     army.units.forEach((unit) => {
         for (let i = 0; i < unit.quantity; i++) {
             const diceRoll = roll();
-            if (diceRoll <= unit.details.get(side)) {
+            if (diceRoll <= unit.details.get(army.side)) {
                 hits.hits += 1;
             }
         }
     });
     return hits;
+}
+
+function setEffectiveRoll(army) {
+    // Consider pairing of artillery and infantry
+    const artilleryCount = 0;
+
+    // Consider terrain
 }
 
 function reconcileArmy(army, hits) {
@@ -156,8 +163,8 @@ function rollBattle(battle, stats) {
     while(!hasWinner(battle)) {
         let attackHits = rollRoundForSide(battle.attack, 'Attack');
         let defendHits = rollRoundForSide(battle.defend, 'Defend');
-        reconcileArmy(battle.attack, defendHits);
-        reconcileArmy(battle.defend, attackHits);
+        reconcileArmy(battle.attack);
+        reconcileArmy(battle.defend);
         battle.round += 1;
     }
     updateStats(battle, stats);

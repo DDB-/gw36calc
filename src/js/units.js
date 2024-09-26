@@ -3,9 +3,10 @@ const infantry = [
     'Marine', 'Mountain Infantry', 'Colonial Infantry', 'Foreign Legion', 'Gurkha'
 ];
 const artillery = [
-    'Artillery', 'Self-Propelled Artillery', 'Advanced Artillery', 'Anti Aircraft Artillery',
+    'Artillery', 'Self-Propelled Artillery', 'Advanced Artillery',
     'Advanced Self-Propelled Artillery', 'Katyusha'
 ];
+const aaguns = ['Anti Aircraft Artillery'];
 const vehicles = [
     'Cavalry', 'Motorized Infantry', 'Mechanized Infantry', 'Advanced Mechanized Infantry',
     'Panzer Grenadier', 'Tank Destroyer', 'Light Tank', 'Medium Tank', 'T-34',
@@ -21,7 +22,7 @@ const boats = [
     'Fleet Carrier', 'Heavy Fleet Carrier', 'Coastal Submarine', 'Submarine', 'Advanced Submarine',
     'Naval Transport', 'Attack Transport'
 ];
-const units = [...infantry, ...artillery, ...vehicles, ...planes, ...boats];
+const units = [...infantry, ...artillery, ...vehicles, ...planes, ...boats, ...aaguns];
 
 function getUnits() {
     return units;
@@ -51,6 +52,8 @@ function getUnitType(unit) {
         return 'Plane';
     } else if (boats.indexOf(unit) != -1) {
         return 'Boat';
+    } else if (aaguns.indexOf(unit) != -1) {
+        return 'AntiAir';
     }
 
     return "Invalid";
