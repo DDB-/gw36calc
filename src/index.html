@@ -8,8 +8,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/main.css">
-    <script src="js/calculator.js"></script>
+    <script src="js/modifiers.js"></script>
     <script src="js/units.js"></script>
+    <script src="js/calculator.js"></script>
     <script defer src="js/includes/alpine.min.js"></script>
     <title>Global War '36 Calculator</title>
 </head>
@@ -22,11 +23,16 @@
             defendUnits: [],
             defendUnitsQ: [],
             defendUnit: '',
+            showModifiers: false,
+            facilities: getFacilities(),
+            battleTypes: getBattleTypes(),
+            terrains: getTerrains(),
+            terrainMods: getTerrainMods(),
             showResult: false,
             stats: makeStats(1000),
         }">
         <div class="flex-parent">
-            <div class="flex-sides">
+            <div>
                 <h1 class="attack-title">Attacker</h1>
                 <input class="unit-input" id="attackselector" list="attackunits" 
                     x-model="attackUnit" @input.debounce="
@@ -77,7 +83,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="flex-sides">
+            <div>
                 <h1 class="defend-title">Defender</h1>
                 <input class="unit-input" id="defendselector" list="defendunits" 
                     x-model="defendUnit" @input.debounce="
@@ -127,6 +133,30 @@
                         </template>
                     </tbody>
                 </table>
+            </div>
+        </div>
+        <div class="flex-parent modifier">
+            <input id="show-modifiers" type="button" value="Show Modifiers", x-on:click="
+                let curr = document.getElementById('show-modifiers').value;
+                if (curr === 'Show Modifiers') {
+                    showModifiers = true;
+                    document.getElementById('show-modifiers').value = 'Hide Modifiers';
+                } else {
+                    showModifiers = false;
+                    document.getElementById('show-modifiers').value = 'Show Modifiers';
+                }
+            ">
+        </div>
+        <div class="flex-parent" x-show="showModifiers">
+            <div>
+                <div class="flex-row-box">
+                    <div class="label">Terrain:</div>
+                    <select id="terrain-select">
+                        <template x-for="terrain in terrains">
+                            <option x-text="terrain"></option>
+                        </template>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="flex-parent">

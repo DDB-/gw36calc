@@ -4,15 +4,6 @@
     justify-content: center;
 }
 
-.flex-side {
-    flex: 1;
-    margin: 10px;
-}
-
-.flex-side:first-child {
-    margin-right: 20px;
-}
-
 .flex-button {
     flex: 0 0 50%;
 }
@@ -46,6 +37,11 @@
     color: #020097;
 }
 
+.label {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
 .percent-win {
     height: 80px;
     font-size: 3rem;
@@ -60,6 +56,10 @@
     font-size: 1.5rem;
     justify-content: center;
     width: 100%;
+}
+
+.modifier {
+    margin-bottom: 10px;
 }
 
 .attack-title {
