@@ -27,7 +27,7 @@
         }">
         <div class="flex-parent">
             <div class="flex-sides">
-                <h1 class="title">Attacker</h1>
+                <h1 class="attack-title">Attacker</h1>
                 <input class="unit-input" id="attackselector" list="attackunits" 
                     x-model="attackUnit" @input.debounce="
                     if (isUnit(attackUnit)) {
@@ -78,7 +78,7 @@
                 </table>
             </div>
             <div class="flex-sides">
-                <h1 class="title">Defender</h1>
+                <h1 class="defend-title">Defender</h1>
                 <input class="unit-input" id="defendselector" list="defendunits" 
                     x-model="defendUnit" @input.debounce="
                     if (isUnit(defendUnit)) {
