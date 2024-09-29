@@ -52,3 +52,32 @@ test('get expected terrain modifiers', () => {
         expect(getTerrainModifier('Surrounded City', makeUnit(unit, 1), 'Defend', 1)).toBe(-1);
     });
 });
+
+test('applicable terrains is expected', () => {
+    expect(getApplicableTerrains('Normal', false, false, false)).toStrictEqual(['Normal']);
+    expect(getApplicableTerrains('Mountains', false, false, false)).toStrictEqual(['Mountains']);
+    expect(getApplicableTerrains('Mountains', true, false, false))
+        .toStrictEqual(['Mountains', 'River']);
+
+    expect(getApplicableTerrains('Jungle', true, true, false))
+        .toStrictEqual(['Jungle', 'River', 'City']);
+
+    expect(getApplicableTerrains('Marshes', true, true, true))
+        .toStrictEqual(['Marshes', 'River', 'City']);
+
+    expect(getApplicableTerrains('Tundra/Ice', true, false, true))
+        .toStrictEqual(['Tundra/Ice', 'River', 'Surrounded City']);
+});
+
+test('multiple terrains applying 0 to many modifiers', () => {
+    expect(getTerrainModifiers(['Mountains'], makeUnit('Infantry', 1), 'Attack', 1))
+        .toStrictEqual([-1]);
+
+    expect(getTerrainModifiers(['Mountains', 'Surrounded City'],
+        makeUnit('Mountain Infantry', 1), 'Defend', 1))
+        .toStrictEqual([1, -1]);
+
+    expect(getTerrainModifiers(['Mountains', 'City'],
+        makeUnit('Mountain Infantry', 1), 'Defend', 1))
+        .toStrictEqual([1, 1]);
+});

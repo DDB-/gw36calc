@@ -19,6 +19,28 @@ function getTerrainMods() {
     return terrainMods;
 }
 
+function getApplicableTerrains(terrain, hasRiver, hasCity, hasSurroundedCity) {
+    const terrains = [];
+    terrains.push(terrain);
+    if (hasRiver) terrains.push('River');
+    if (hasCity) {
+        terrains.push('City');
+    } else if (hasSurroundedCity) {
+        terrains.push('Surrounded City');
+    }
+
+    return terrains;
+}
+
+function getTerrainModifiers(terrains, unit, side, round) {
+    const modifiers = [];
+    terrains.forEach((terrain) => {
+        const modifier = getTerrainModifier(terrain, unit, side, round);
+        if (modifier != 0) modifiers.push(modifier);
+    });
+    return modifiers;
+}
+
 function getTerrainModifier(terrain, unit, side, round) {
     const landUnits = ['Infantry', 'Artillery', 'AntiAir', 'Vehicle'];
     if (terrain === 'Mountains') {

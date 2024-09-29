@@ -194,7 +194,8 @@
         </div>
         <div class="flex-parent">
             <input class="flex-button" type="button" value="Calculate", x-on:click="
-                stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ);
+                stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
+                    selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
                 showResult = true;
             ">
         </div>

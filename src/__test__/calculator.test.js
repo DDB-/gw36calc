@@ -3,6 +3,7 @@ const script = (path) => {
 };
 
 eval(script('src/js/units.js'));
+eval(script('src/js/modifiers.js'));
 eval(script('src/js/calculator.js'));
 
 test('100 rolls always falls between 1 and 12', () => {

@@ -91,9 +91,10 @@ function makeStats(rounds) {
 }
 
 class Battle {
-    constructor(attack, defend) {
+    constructor(attack, defend, terrains) {
         this.attack = attack;
         this.defend = defend;
+        this.terrains = terrains;
         this.round = 1;
         this.winner = '';
         this.ippValues = new IppValues(
@@ -102,8 +103,8 @@ class Battle {
     }
 }
 
-function makeBattle(attack, defend) {
-    return new Battle(attack, defend);
+function makeBattle(attack, defend, terrains) {
+    return new Battle(attack, defend, terrains ?? ['Normal']);
 }
 
 class Hits {
@@ -117,16 +118,34 @@ function makeHits() {
     return new Hits();
 }
 
+function clamp(num, min, max) {
+    if (num <= min) return min;
+    if (num >= max) return max;
+    return num;
+}
+
 function roll() {
     return Math.floor(Math.random() * 12) + 1;
 }
 
-function rollRoundForSide(army) {
+function getUnitResolved(battle, unit, side) {
+    const modifiers = getTerrainModifiers(battle.terrains, unit, side, battle.round);
+    // Get the highest positive modifier, if it exists, else 0
+    const maxPositiveMod = clamp(Math.max(...modifiers), 0, 12);
+    // Get the lowest negative modifier, if it exists, else 0
+    const maxNegativeMod = clamp(Math.min(...modifiers), -12, 0);
+
+    return clamp(unit.details.get(side) + maxPositiveMod + maxNegativeMod, 1, 12);
+}
+
+function rollRoundForSide(battle, side) {
+    const army = (side === 'Attack') ? battle.attack : battle.defend;
     const hits = new Hits();
     army.units.forEach((unit) => {
         for (let i = 0; i < unit.quantity; i++) {
             const diceRoll = roll();
-            if (diceRoll <= unit.details.get(army.side)) {
+            const resolvedValue = getUnitResolved(battle, unit, side);
+            if (diceRoll <= resolvedValue) {
                 hits.hits += 1;
             }
         }
@@ -183,8 +202,8 @@ function hasWinner(battle) {
 
 function rollBattle(battle, stats) {
     while(!hasWinner(battle)) {
-        let attackHits = rollRoundForSide(battle.attack, 'Attack');
-        let defendHits = rollRoundForSide(battle.defend, 'Defend');
+        let attackHits = rollRoundForSide(battle, 'Attack');
+        let defendHits = rollRoundForSide(battle, 'Defend');
         reconcileArmy(battle.attack, defendHits);
         reconcileArmy(battle.defend, attackHits);
         battle.round += 1;
@@ -212,13 +231,16 @@ function updateStats(battle, stats) {
     }
 }
 
-function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ) {
+function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
+        selectedTerrain, hasRiver, hasCity, hasSurroundedCity) {
     const rounds = 1000;
     const stats = new Stats(rounds);
+    const battleTerrains = getApplicableTerrains(selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
     for (let i = 0; i < stats.rounds; i++) {
         const battle = new Battle(
             new Army(attackUnits, attackUnitsQ, 'Attack'),
-            new Army(defendUnits, defendUnitsQ, 'Defend')
+            new Army(defendUnits, defendUnitsQ, 'Defend'),
+            battleTerrains
         );
         rollBattle(battle, stats);
     }
