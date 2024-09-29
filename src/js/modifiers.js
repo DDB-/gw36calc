@@ -52,9 +52,9 @@ function getTerrainModifier(terrain, unit, side, round) {
             }
         }
     } else if (terrain === 'Desert') {
-        if (landUnits.indexOf(unit.unitClass) != -1) {
+        if (landUnits.indexOf(unit.unitClass) != -1 && side === 'Attack') {
             if (['Foreign Legion'].indexOf(unit.name) != -1) {
-                return (side === 'Attack') ? 1 : 0;
+                return 1;
             } else {
                 return -1;
             }

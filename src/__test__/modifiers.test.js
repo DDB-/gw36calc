@@ -24,8 +24,9 @@ test('get expected terrain modifiers', () => {
     expect(getTerrainModifier('Mountains', makeUnit('Fighter', 1), 'Defend', 1)).toBe(0);
 
     expect(getTerrainModifier('Desert', makeUnit('Infantry', 1), 'Attack', 1)).toBe(-1);
+    expect(getTerrainModifier('Desert', makeUnit('Infantry', 1), 'Defend', 1)).toBe(0);
     expect(getTerrainModifier('Desert', makeUnit('Artillery', 1), 'Attack', 1)).toBe(-1);
-    expect(getTerrainModifier('Desert', makeUnit('Artillery', 1), 'Defend', 1)).toBe(-1);
+    expect(getTerrainModifier('Desert', makeUnit('Artillery', 1), 'Defend', 1)).toBe(0);
     expect(getTerrainModifier('Desert', makeUnit('Foreign Legion', 1), 'Defend', 1)).toBe(0);
     expect(getTerrainModifier('Desert', makeUnit('Foreign Legion', 1), 'Attack', 1)).toBe(1);
 
