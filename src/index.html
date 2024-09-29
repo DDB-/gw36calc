@@ -27,9 +27,13 @@
             facilities: getFacilities(),
             battleTypes: getBattleTypes(),
             terrains: getTerrains(),
-            terrainMods: getTerrainMods(),
+            hasRiver: false,
+            hasSurroundedCity: false,
+            hasCity: false,
+            city: '',
             showResult: false,
             stats: makeStats(1000),
+            selectedTerrain: 'Normal'
         }">
         <div class="flex-parent">
             <div>
@@ -38,7 +42,6 @@
                     x-model="attackUnit" @input.debounce="
                     if (isUnit(attackUnit)) {
                         let unitIndex = getUnitIndex(attackUnit, attackUnits);
-                        console.log(unitIndex);
                         if (unitIndex === -1) {
                             attackUnits.push(attackUnit);
                             attackUnitsQ.push(1);
@@ -148,15 +151,45 @@
             ">
         </div>
         <div class="flex-parent" x-show="showModifiers">
-            <div>
-                <div class="flex-row-box">
-                    <div class="label">Terrain:</div>
-                    <select id="terrain-select">
+            <div class="flex-row-box">
+                <label class="checkbox">
+                    Terrain:
+                    <select class="terrain-select" x-model="selectedTerrain">
                         <template x-for="terrain in terrains">
                             <option x-text="terrain"></option>
                         </template>
                     </select>
-                </div>
+                </label>
+            </div>
+            <div class ="flex-box-row">
+                <label class="checkbox">
+                    <input type="checkbox" value="River" x-model="hasRiver">
+                    River
+                </label>
+            </div>
+            <div class ="flex-box-row">
+                <label class="checkbox">
+                    <input id="city" type="checkbox" value="City"
+                    x-on:change="
+                        hasCity = !hasCity;
+                        if (hasCity && hasSurroundedCity) {
+                            document.getElementById('surroundedCity').checked = false;
+                            hasSurroundedCity = false;
+                        }
+                    ">
+                    City
+                </label>
+                <label class="checkbox">
+                    <input id="surroundedCity" type="checkbox" value="SurroundedCity"
+                    x-on:change="
+                        hasSurroundedCity = !hasSurroundedCity;
+                        if (hasSurroundedCity && hasCity) {
+                            document.getElementById('city').checked = false;
+                            hasCity = false;
+                        }
+                    ">
+                    Surrounded City
+                </label>
             </div>
         </div>
         <div class="flex-parent">
