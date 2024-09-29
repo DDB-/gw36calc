@@ -70,6 +70,9 @@ test('applicable terrains is expected', () => {
 });
 
 test('multiple terrains applying 0 to many modifiers', () => {
+    expect(getTerrainModifiers(['Normal'], makeUnit('Infantry', 1), 'Attack', 1))
+        .toStrictEqual([]);
+
     expect(getTerrainModifiers(['Mountains'], makeUnit('Infantry', 1), 'Attack', 1))
         .toStrictEqual([-1]);
 
