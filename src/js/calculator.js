@@ -91,10 +91,11 @@ function makeStats(rounds) {
 }
 
 class Battle {
-    constructor(attack, defend, terrains) {
+    constructor(attack, defend, terrains, isBorder) {
         this.attack = attack;
         this.defend = defend;
         this.terrains = terrains;
+        this.isBorder = isBorder;
         this.round = 1;
         this.winner = '';
         this.ippValues = new IppValues(
@@ -103,8 +104,8 @@ class Battle {
     }
 }
 
-function makeBattle(attack, defend, terrains) {
-    return new Battle(attack, defend, terrains ?? ['Normal']);
+function makeBattle(attack, defend, terrains, isBorder) {
+    return new Battle(attack, defend, terrains ?? ['Normal'], isBorder ?? false);
 }
 
 class Hits {
@@ -129,7 +130,9 @@ function roll() {
 }
 
 function getUnitResolved(battle, unit, side) {
-    const modifiers = getTerrainModifiers(battle.terrains, unit, side, battle.round);
+    const modifiers = getTerrainModifiers(battle.terrains, unit, side, 
+        battle.round, battle.isBorder);
+    // Rule 0.5b, you only get your highest positive modifier, and lowest negative modifier
     // Get the highest positive modifier, if it exists, else 0
     const maxPositiveMod = clamp(Math.max(...modifiers), 0, 12);
     // Get the lowest negative modifier, if it exists, else 0
@@ -232,7 +235,7 @@ function updateStats(battle, stats) {
 }
 
 function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
-        selectedTerrain, hasRiver, hasCity, hasSurroundedCity) {
+        selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain) {
     const rounds = 1000;
     const stats = new Stats(rounds);
     const battleTerrains = getApplicableTerrains(selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
@@ -240,7 +243,7 @@ function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
         const battle = new Battle(
             new Army(attackUnits, attackUnitsQ, 'Attack'),
             new Army(defendUnits, defendUnitsQ, 'Defend'),
-            battleTerrains
+            battleTerrains, isBorderTerrain
         );
         rollBattle(battle, stats);
     }

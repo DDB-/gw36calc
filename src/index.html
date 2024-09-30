@@ -27,6 +27,7 @@
             facilities: getFacilities(),
             battleTypes: getBattleTypes(),
             terrains: getTerrains(),
+            isBorderTerrain: false,
             hasRiver: false,
             hasSurroundedCity: false,
             hasCity: false,
@@ -166,6 +167,10 @@
                     <input type="checkbox" value="River" x-model="hasRiver">
                     River
                 </label>
+                <label class="checkbox">
+                    <input type="checkbox" value="BorderTerrain" x-model="isBorderTerrain">
+                    Border Terrain
+                </label>
             </div>
             <div class ="flex-box-row">
                 <label class="checkbox">
@@ -195,7 +200,7 @@
         <div class="flex-parent">
             <input class="flex-button" type="button" value="Calculate", x-on:click="
                 stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
-                    selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
+                    selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain);
                 showResult = true;
             ">
         </div>

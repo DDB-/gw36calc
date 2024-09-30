@@ -40,6 +40,8 @@ test('get expected terrain modifiers', () => {
     expect(getTerrainModifier('River', makeUnit('Infantry', 1), 'Attack', 2)).toBe(0);
     expect(getTerrainModifier('River', makeUnit('Infantry', 1), 'Defend', 1)).toBe(0);
     expect(getTerrainModifier('River', makeUnit('Marine', 1), 'Attack', 1)).toBe(0);
+    expect(getTerrainModifier('River', makeUnit('Artillery', 1), 'Attack', 1)).toBe(0);
+    expect(getTerrainModifier('River', makeUnit('Artillery', 1), 'Defend', 1)).toBe(0);
     expect(getTerrainModifier('River', makeUnit('Medium Tank', 1), 'Attack', 1)).toBe(-1);
     expect(getTerrainModifier('River', makeUnit('Jet Fighter', 1), 'Attack', 1)).toBe(0);
 
@@ -84,4 +86,20 @@ test('multiple terrains applying 0 to many modifiers', () => {
     expect(getTerrainModifiers(['Mountains', 'City'],
         makeUnit('Mountain Infantry', 1), 'Defend', 1))
         .toStrictEqual([1, 1]);
+});
+
+test('border terrain impact is only round 1', () => {
+    expect(getTerrainModifier('Mountains', makeUnit('Infantry', 1), 'Attack', 1, true))
+        .toBe(-1);
+    expect(getTerrainModifier('Mountains', makeUnit('Infantry', 1), 'Defend', 1, true))
+        .toBe(0);
+    expect(getTerrainModifier('Mountains', makeUnit('Mountain Infantry', 1), 'Attack', 1, true))
+        .toBe(0);
+    expect(getTerrainModifier('Mountains', makeUnit('Mountain Infantry', 1), 'Defend', 1, true))
+        .toBe(1);
+
+    expect(getTerrainModifier('Mountains', makeUnit('Infantry', 1), 'Attack', 2, true))
+        .toBe(0);
+    expect(getTerrainModifier('Mountains', makeUnit('Mountain Infantry', 1), 'Defend', 2, true))
+        .toBe(0);
 });
