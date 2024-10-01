@@ -119,6 +119,34 @@ function makeHits() {
     return new Hits();
 }
 
+class TargetSelect {
+    constructor(targetType, targets, attackSelect, strict) {
+        this.targetType = targetType;
+        this.targets = targets;
+        // By default, the attacker will pick which units are target selected
+        // However, this class will also be used for things like air superiority
+        // Where the defender will pick their losses, but the losses must be planes
+        this.attackSelect = attackSelect ?? true;
+        // While most target selects revert to normal hits if there is no eligible
+        // target, there are a couple of units who can only hit certain units
+        // so this helps prioritize using those hits if there are available targets
+        this.strict = strict ?? false;
+    }
+
+    applies(unit) {
+        if (this.targetType === 'Unit Class') {
+            return (this.targets.indexOf(unit.unitClass) != -1);
+        } else if (this.targetType === 'Unit Name') {
+            return (this.targets.indexOf(unit.name) != -1);
+        }
+        return false;
+    }
+}
+
+function makeTargetSelect(targetType, targets, attackSelect, strict) {
+    return new TargetSelect(targetType, targets, attackSelect, strict);
+}
+
 function clamp(num, min, max) {
     if (num <= min) return min;
     if (num >= max) return max;

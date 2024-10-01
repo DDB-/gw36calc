@@ -106,3 +106,20 @@ test('stats object works as expected', () => {
     expect(stats.avgLoss('Defend')).toBeCloseTo(7.4);
     expect(stats.avgLoss('Attack')).toBeCloseTo(7.7);
 });
+
+test('target selects correctly determined if they apply', () => {
+    let targetSelect = makeTargetSelect('Unit Class', ['Infantry', 'Vehicle', 'Artillery']);
+    expect(targetSelect.applies(makeUnit('Infantry', 1))).toBeTruthy();
+    expect(targetSelect.applies(makeUnit('Militia', 1))).toBeTruthy();
+    expect(targetSelect.applies(makeUnit('Medium Tank', 1))).toBeTruthy();
+    expect(targetSelect.applies(makeUnit('Self-Propelled Artillery', 1))).toBeTruthy();
+    expect(targetSelect.applies(makeUnit('Jet Fighter', 1))).toBeFalsy();
+
+    targetSelect = makeTargetSelect('Unit Name', ['Infantry']);
+    expect(targetSelect.applies(makeUnit('Infantry', 1))).toBeTruthy();
+    expect(targetSelect.applies(makeUnit('Militia', 1))).toBeFalsy();
+
+    targetSelect = makeTargetSelect('Invalid', ['Infantry']);
+    expect(targetSelect.applies(makeUnit('Infantry', 1))).toBeFalsy();
+    expect(targetSelect.applies(makeUnit('Militia', 1))).toBeFalsy();
+});
