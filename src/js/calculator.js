@@ -147,6 +147,15 @@ function makeTargetSelect(targetType, targets, attackSelect, strict) {
     return new TargetSelect(targetType, targets, attackSelect, strict);
 }
 
+function getIfTargetSelect(battle, unit, side, diceRoll) {
+    // 1.7.7 Infantry class units defending a city target select
+    if (side === 'Defend' && unit.unitClass === 'Infantry' && diceRoll === 1) {
+        return new TargetSelect('Unit Class', ['Vehicle'])
+    }
+
+    return undefined;
+}
+
 function clamp(num, min, max) {
     if (num <= min) return min;
     if (num >= max) return max;
@@ -166,6 +175,7 @@ function getUnitResolved(battle, unit, side) {
     // Get the lowest negative modifier, if it exists, else 0
     const maxNegativeMod = clamp(Math.min(...modifiers), -12, 0);
 
+    // You can't go below 1 or above 12 regardless of bonuses
     return clamp(unit.details.get(side) + maxPositiveMod + maxNegativeMod, 1, 12);
 }
 
@@ -177,18 +187,12 @@ function rollRoundForSide(battle, side) {
             const diceRoll = roll();
             const resolvedValue = getUnitResolved(battle, unit, side);
             if (diceRoll <= resolvedValue) {
+                const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
                 hits.hits += 1;
             }
         }
     });
     return hits;
-}
-
-function setEffectiveRoll(army) {
-    // Consider pairing of artillery and infantry
-    const artilleryCount = 0;
-
-    // Consider terrain
 }
 
 function reconcileArmy(army, hits) {

@@ -123,3 +123,22 @@ test('target selects correctly determined if they apply', () => {
     expect(targetSelect.applies(makeUnit('Infantry', 1))).toBeFalsy();
     expect(targetSelect.applies(makeUnit('Militia', 1))).toBeFalsy();
 });
+
+test('get target select for an attack against a city', () => {
+    let attack = makeArmy(['Infantry', 'Artillery', 'Medium Tank'], [6,2,2], 'Attack');
+    let defend = makeArmy(['Infantry', 'Light Tank', 'Militia'], [3,1,4], 'Defend');
+    let battle = makeBattle(attack, defend, ['City']);
+
+    battle.attack.units.forEach((unit) => {
+        expect(getIfTargetSelect(battle, unit, 'Attack', 1)).toBeUndefined();
+    });
+
+    battle.defend.units.forEach((unit) => {
+        if (unit.unitClass === 'Infantry') {
+            expect(getIfTargetSelect(battle, unit, 'Defend', 1))
+                .toStrictEqual(makeTargetSelect('Unit Class', ['Vehicle']));
+        } else {
+            expect(getIfTargetSelect(battle, unit, 'Defend', 1)).toBeUndefined();
+        }
+    });
+});
