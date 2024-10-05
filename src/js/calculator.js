@@ -150,7 +150,7 @@ function makeTargetSelect(targetType, targets, attackSelect, strict) {
 function getIfTargetSelect(battle, unit, side, diceRoll) {
     // 1.7.7 Infantry class units defending a city target select
     if (side === 'Defend' && unit.unitClass === 'Infantry' && diceRoll === 1) {
-        return new TargetSelect('Unit Class', ['Vehicle'])
+        return new TargetSelect('Unit Class', ['Vehicle']);
     }
 
     return undefined;
@@ -195,8 +195,35 @@ function rollRoundForSide(battle, side) {
     return hits;
 }
 
+function handleTargetSelects(army, targetSelects) {
+    let units = army.units;
+    targetSelects.forEach((target) => {
+        // Take out the most expensive unit
+        let maxIndex = undefined;
+        let maxIpp = 0;
+        if (target.attackSelect) {
+            units.forEach((unit, index) => {
+                if (target.applies(unit)) {
+                    if (unit.details.get('Cost') > maxIpp) {
+                        maxIndex = index;
+                    }
+                }
+            });
+            if (maxIndex) {
+                units[maxIndex].quantity -= 1;
+                if (units[maxIndex].quantity == 0) {
+                   units.splice(maxIndex,1);
+                }
+            }
+        }
+    });
+    return units;
+
+}
+
 function reconcileArmy(army, hits) {
-    let sortedUnits = army.units.sort((a,b) => {
+    let units = handleTargetSelects(army, hits.targetSelects);
+    let sortedUnits = units.sort((a,b) => {
         return a.details.get('Cost') - b.details.get('Cost');
     });
 

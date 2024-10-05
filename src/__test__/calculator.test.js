@@ -142,3 +142,30 @@ test('get target select for an attack against a city', () => {
         }
     });
 });
+
+test('resolve with target selection', () => {
+    let attack = makeArmy(['Infantry', 'Light Tank', 'Medium Tank'], [6,2,2], 'Attack');
+    let defend = makeArmy(['Infantry', 'Militia'], [3,4], 'Defend');
+    let battle = makeBattle(attack, defend, ['City']);
+    let unit = defend.units[0];
+
+    // City defender gets target select on a 1
+    let targetSelect = getIfTargetSelect(battle, unit, 'Defend', 1);
+    expect(targetSelect).not.toBeUndefined();
+
+    let hits = makeHits();
+    hits.hits = 1;
+    hits.targetSelects = [targetSelect];
+
+    attack = reconcileArmy(attack, hits);
+
+    // Infantry defending in city has target select against vehicles at a 1
+    // Because it is attacker selected, the most expensive is picked, Medium Tank
+    // The regular hit is taken against the Infantry, as it is cheapest
+    expect(attack.units[0].name).toBe('Infantry');
+    expect(attack.units[0].quantity).toBe(5);
+    expect(attack.units[1].name).toBe('Light Tank');
+    expect(attack.units[1].quantity).toBe(2);
+    expect(attack.units[2].name).toBe('Medium Tank');
+    expect(attack.units[2].quantity).toBe(1);
+});
