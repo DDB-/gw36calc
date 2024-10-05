@@ -169,3 +169,38 @@ test('resolve with target selection', () => {
     expect(attack.units[2].name).toBe('Medium Tank');
     expect(attack.units[2].quantity).toBe(1);
 });
+
+test('vehicle target selections; target select overflow becomes normal hit', () => {
+    let attack = makeArmy(['Tank Destroyer', 'T-34', 'Heavy Tank'], [2,2,2], 'Attack');
+    let defend = makeArmy(['Infantry', 'Militia', 'Tiger I'], [4,4,2], 'Defend');
+    let battle = makeBattle(attack, defend);
+
+    let attackHits = makeHits();
+    attack.units.forEach((unit) => {
+        let targetSelect = getIfTargetSelect(battle, unit, 'Attack', 1);
+        expect(targetSelect).not.toBeUndefined();
+        attackHits.targetSelects.push(targetSelect);
+    });
+
+    let tigerI = defend.units[2];
+    let targetSelect = getIfTargetSelect(battle, tigerI, 'Defend', 1);
+    expect(targetSelect).not.toBeUndefined();
+    let defendHits = makeHits();
+    defendHits.hits += 1;
+    defendHits.targetSelects = [targetSelect];
+
+    attack = reconcileArmy(attack, defendHits);
+    expect(attack.units[0].name).toBe('Tank Destroyer');
+    expect(attack.units[0].quantity).toBe(1);
+    expect(attack.units[1].name).toBe('T-34');
+    expect(attack.units[1].quantity).toBe(2);
+    expect(attack.units[2].name).toBe('Heavy Tank');
+    expect(attack.units[2].quantity).toBe(1);
+
+    defend = reconcileArmy(defend, attackHits);
+    expect(defend.units.length).toBe(2);
+    expect(defend.units[0].name).toBe('Militia');
+    expect(defend.units[0].quantity).toBe(3);
+    expect(defend.units[1].name).toBe('Infantry');
+    expect(defend.units[1].quantity).toBe(4);
+});

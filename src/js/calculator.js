@@ -153,6 +153,34 @@ function getIfTargetSelect(battle, unit, side, diceRoll) {
         return new TargetSelect('Unit Class', ['Vehicle']);
     }
 
+    // Various vehicles get target selects
+    if (unit.unitClass === 'Vehicle') {
+        if ((unit.name === 'Tank Destroyer' && diceRoll <= 3) ||
+            (unit.name === 'T-34' && diceRoll === 1) ||
+            (unit.name === 'Heavy Tank' && diceRoll === 1) ||
+            (unit.name === 'Tiger I' && diceRoll <= 3)) {
+            return new TargetSelect('Unit Class', ['Vehicle']);
+        }
+    }
+
+    if (unit.name === 'Tactical Bomber' && diceRoll <= 3) {
+        return new TargetSelect('Unit Class', ['Infantry', 'Vehicle',
+            'Artillery', 'AntiAir', 'Boat']);
+    }
+
+    if (unit.name === 'Light Cruiser' && diceRoll <= 3) {
+        return new TargetSelect('Unit Class', ['Plane']);
+    }
+
+    // submarines get target select on 1 against surface ships
+    if (['Coastal Submarine', 'Submarine', 'Advanced Submarine'].indexOf(unit.name) != -1
+            && diceRoll === 1) {
+                return new TargetSelect('Unit Name', ['Torpedo Boat Destroyer',
+                'Destroyer', 'Coastal Defense Ship', 'Light Cruiser', 'Heavy Cruiser',
+                'Battlecruiser', 'Battleship', 'Heavy Battleship', 'Light Carrier',
+                'Fleet Carrier', 'Heavy Fleet Carrier', 'Naval Transport', 'Attack Transport']);
+    }
+
     return undefined;
 }
 
@@ -188,16 +216,20 @@ function rollRoundForSide(battle, side) {
             const resolvedValue = getUnitResolved(battle, unit, side);
             if (diceRoll <= resolvedValue) {
                 const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
-                hits.hits += 1;
+                if (targetSelect) {
+                    hits.targetSelects.push(targetSelect);
+                } else {
+                    hits.hits += 1;
+                }
             }
         }
     });
     return hits;
 }
 
-function handleTargetSelects(army, targetSelects) {
+function handleTargetSelects(army, hits) {
     let units = army.units;
-    targetSelects.forEach((target) => {
+    hits.targetSelects.forEach((target) => {
         // Take out the most expensive unit
         let maxIndex = undefined;
         let maxIpp = 0;
@@ -214,6 +246,10 @@ function handleTargetSelects(army, targetSelects) {
                 if (units[maxIndex].quantity == 0) {
                    units.splice(maxIndex,1);
                 }
+            } else {
+                if (!target.strict) {
+                    hits.hits += 1;
+                }
             }
         }
     });
@@ -222,7 +258,7 @@ function handleTargetSelects(army, targetSelects) {
 }
 
 function reconcileArmy(army, hits) {
-    let units = handleTargetSelects(army, hits.targetSelects);
+    let units = handleTargetSelects(army, hits);
     let sortedUnits = units.sort((a,b) => {
         return a.details.get('Cost') - b.details.get('Cost');
     });
