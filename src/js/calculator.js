@@ -219,37 +219,15 @@ function getUnitResolved(battle, unit, side) {
     return clamp(unit.details.get(side) + maxPositiveMod + maxNegativeMod, 1, 12);
 }
 
-function rollRoundForSide(battle, side) {
+function rollRoundForSide(battle, side, isFirstStrike) {
     const army = (side === 'Attack') ? battle.attack : battle.defend;
     const enemyArmy = (side === 'Attack') ? battle.defend : battle.attack;
     const hits = new Hits();
     army.units.forEach((unit) => {
         if (battle.round === 1 && hasFirstStrike(unit, enemyArmy)) {
-            return; // First strike units have already gone this round
-        }
-        for (let i = 0; i < unit.quantity; i++) {
-            const diceRoll = roll();
-            const resolvedValue = getUnitResolved(battle, unit, side);
-            if (diceRoll <= resolvedValue) {
-                const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
-                if (targetSelect) {
-                    hits.targetSelects.push(targetSelect);
-                } else {
-                    hits.hits += 1;
-                }
-            }
-        }
-    });
-    return hits;
-}
-
-function rollFirstStrikesForSide(battle, side) {
-    const army = (side === 'Attack') ? battle.attack : battle.defend;
-    const enemyArmy = (side === 'Attack') ? battle.defend : battle.attack;
-    const hits = new Hits();
-    army.units.forEach((unit) => {
-        if (!hasFirstStrike(unit, enemyArmy)) {
-            return;
+            if (!isFirstStrike) return; // First strike units have already gone this round
+        } else {
+            if (isFirstStrike) return; // If not a first strike, then don't roll first strike
         }
         for (let i = 0; i < unit.quantity; i++) {
             const diceRoll = roll();
@@ -339,8 +317,8 @@ function hasWinner(battle) {
 }
 
 function rollBattle(battle, stats) {
-    let attackHits = rollFirstStrikesForSide(battle, 'Attack');
-    let defendHits = rollFirstStrikesForSide(battle, 'Defend');
+    let attackHits = rollRoundForSide(battle, 'Attack', true);
+    let defendHits = rollRoundForSide(battle, 'Defend', true);
     reconcileArmy(battle.attack, defendHits);
     reconcileArmy(battle.defend, attackHits);
     while(!hasWinner(battle)) {

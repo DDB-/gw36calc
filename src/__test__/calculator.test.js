@@ -223,7 +223,7 @@ test('army with no first strike never gets them', () => {
     const noFirstStrikeAttack = makeArmy(['Infantry', 'Tactical Bomber'], [8, 2], 'Attack');
     const battle = makeBattle(noFirstStrikeAttack, firstStrikeDefend);
     for (let i = 0; i < 100; i++) {
-        let hits = rollFirstStrikesForSide(battle, 'Attack');
+        let hits = rollRoundForSide(battle, 'Attack', true);
         expect(hits.hits).toBe(0);
     }
 });
