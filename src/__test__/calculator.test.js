@@ -204,3 +204,26 @@ test('vehicle target selections; target select overflow becomes normal hit', () 
     expect(defend.units[1].name).toBe('Infantry');
     expect(defend.units[1].quantity).toBe(4);
 });
+
+test('has first strike', () => {
+    expect(hasFirstStrike(makeUnit('Infantry', 1))).toBe(false);
+    expect(hasFirstStrike(makeUnit('Artillery', 1))).toBe(true);
+    expect(hasFirstStrike(makeUnit('Anti Air Artillery', 1))).toBe(false);
+    expect(hasFirstStrike(makeUnit('Fighter', 1))).toBe(false);
+
+    const destroyerArmy = makeArmy(['Destroyer'], [1], 'Attack');
+    const noDestroyerArmy = makeArmy(['Light Cruiser'], [1], 'Defend');
+    expect(hasFirstStrike(makeUnit('Coastal Submarine', 1))).toBe(false);
+    expect(hasFirstStrike(makeUnit('Submarine', 1), destroyerArmy)).toBe(false);
+    expect(hasFirstStrike(makeUnit('Advanced Submarine', 1), noDestroyerArmy)).toBe(true);
+});
+
+test('army with no first strike never gets them', () => {
+    const firstStrikeDefend = makeArmy(['Infantry', 'Artillery'], [8, 2], 'Defend');
+    const noFirstStrikeAttack = makeArmy(['Infantry', 'Tactical Bomber'], [8, 2], 'Attack');
+    const battle = makeBattle(noFirstStrikeAttack, firstStrikeDefend);
+    for (let i = 0; i < 100; i++) {
+        let hits = rollFirstStrikesForSide(battle, 'Attack');
+        expect(hits.hits).toBe(0);
+    }
+});
