@@ -227,3 +227,27 @@ test('army with no first strike never gets them', () => {
         expect(hits.hits).toBe(0);
     }
 });
+
+test('boost count expected', () => {
+    let army = makeArmy(['Artillery', 'Infantry'], [3,4]);
+    expect(getAvailableBoosts(army)).toBe(3);
+});
+
+test('get unit resolved with infantry boost', () => {
+    let attack = makeArmy(['Artillery', 'Infantry'], [3,4], 'Attack');
+    let defend = makeArmy(['Militia', 'Infantry'], [2,3], 'Defend');
+    let battle = makeBattle(attack, defend);
+    attack.boosts = getAvailableBoosts(attack);
+
+    attack.units.forEach((unit) => {
+        for (let i = 0; i < unit.quantity; i++) {
+            let resolvedValue = getUnitResolved(battle, attack, unit, attack.side);
+            if (unit.name === 'Artillery') {
+                expect(resolvedValue).toBe(3);
+            } else if (unit.name === 'Infantry') {
+                // 3 artillery, 4 infantry, so last one isn't boosted
+                expect(resolvedValue).toBe((i === 3) ? 2 : 3);
+            }
+        }
+    });
+});

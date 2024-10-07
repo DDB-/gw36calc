@@ -1,6 +1,7 @@
 class Army {
     constructor(units, quantities, side) {
         this.side = side;
+        this.boosts = 0;
         this.units = [];
         units.forEach((unit, index) => {
             this.units.push(makeUnit(unit, quantities[index]));
@@ -206,9 +207,25 @@ function roll() {
     return Math.floor(Math.random() * 12) + 1;
 }
 
-function getUnitResolved(battle, unit, side) {
-    const modifiers = getTerrainModifiers(battle.terrains, unit, side, 
+function getAvailableBoosts(army) {
+    let availableBoosts = 0;
+    army.units.forEach((unit) => {
+        if (unit.unitClass === 'Artillery') {
+            availableBoosts += unit.quantity;
+        }
+    });
+    return availableBoosts;
+}
+
+function getUnitResolved(battle, army, unit) {
+    const modifiers = getTerrainModifiers(battle.terrains, unit, army.side, 
         battle.round, battle.isBorder);
+
+    // Add in an infantry boost from artillery, unless they already have a boost
+    if (Math.max(...modifiers) <= 0 && unit.unitClass === 'Infantry' && army.boosts > 0) {
+        modifiers.push(1);
+        army.boosts -= 1;
+    }
     // Rule 0.5b, you only get your highest positive modifier, and lowest negative modifier
     // Get the highest positive modifier, if it exists, else 0
     const maxPositiveMod = clamp(Math.max(...modifiers), 0, 12);
@@ -216,13 +233,14 @@ function getUnitResolved(battle, unit, side) {
     const maxNegativeMod = clamp(Math.min(...modifiers), -12, 0);
 
     // You can't go below 1 or above 12 regardless of bonuses
-    return clamp(unit.details.get(side) + maxPositiveMod + maxNegativeMod, 1, 12);
+    return clamp(unit.details.get(army.side) + maxPositiveMod + maxNegativeMod, 1, 12);
 }
 
 function rollRoundForSide(battle, side, isFirstStrike) {
     const army = (side === 'Attack') ? battle.attack : battle.defend;
     const enemyArmy = (side === 'Attack') ? battle.defend : battle.attack;
     const hits = new Hits();
+    army.boosts = getAvailableBoosts(army);
     army.units.forEach((unit) => {
         if (battle.round === 1 && hasFirstStrike(unit, enemyArmy)) {
             if (!isFirstStrike) return; // First strike units have already gone this round
@@ -231,7 +249,7 @@ function rollRoundForSide(battle, side, isFirstStrike) {
         }
         for (let i = 0; i < unit.quantity; i++) {
             const diceRoll = roll();
-            const resolvedValue = getUnitResolved(battle, unit, side);
+            const resolvedValue = getUnitResolved(battle, army, unit);
             if (diceRoll <= resolvedValue) {
                 const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
                 if (targetSelect) {
@@ -327,6 +345,8 @@ function rollBattle(battle, stats) {
         reconcileArmy(battle.attack, defendHits);
         reconcileArmy(battle.defend, attackHits);
         battle.round += 1;
+        battle.attack.boosts = 0;
+        battle.defend.boosts = 0;
     }
     updateStats(battle, stats);
 }
@@ -353,7 +373,7 @@ function updateStats(battle, stats) {
 
 function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
         selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain) {
-    const rounds = 1000;
+    const rounds = 10000;
     const stats = new Stats(rounds);
     const battleTerrains = getApplicableTerrains(selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
     for (let i = 0; i < stats.rounds; i++) {
