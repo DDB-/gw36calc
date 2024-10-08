@@ -251,3 +251,30 @@ test('get unit resolved with infantry boost', () => {
         }
     });
 });
+
+test('air superiority takes cheapest unit', () => {
+    let attack = makeArmy(['Fighter', 'Light Cruiser'], [2,2], 'Attack');
+    let defend = makeArmy(['Fighter', 'Jet Fighter', 'Heavy Cruiser'], [2,2,3], 'Defend');
+    let battle = makeBattle(attack, defend);
+
+    let fighter = attack.units[0];
+    let airSuperiority = getIfTargetSelect(battle, fighter, 'Attack', 5);
+    expect(airSuperiority).not.toBeUndefined();
+
+    let lightCruiser = attack.units[1];
+    let targetSelect = getIfTargetSelect(battle, lightCruiser, 'Attack', 3);
+    expect(targetSelect).not.toBeUndefined();
+
+    let hits = makeHits();
+    hits.targetSelects = [airSuperiority, targetSelect];
+
+    // Air superiority will take a Fighter, target select from Light Cruiser takes the Jet Fighter
+    reconcileArmy(defend, hits);
+    expect(defend.units.length).toBe(3);
+    expect(defend.units[0].name).toBe('Fighter')
+    expect(defend.units[0].quantity).toBe(1)
+    expect(defend.units[1].name).toBe('Jet Fighter')
+    expect(defend.units[1].quantity).toBe(1)
+    expect(defend.units[2].name).toBe('Heavy Cruiser')
+    expect(defend.units[2].quantity).toBe(3)
+})

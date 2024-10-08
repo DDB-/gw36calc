@@ -89,7 +89,6 @@ function getTerrainModifier(terrain, unit, side, round, isBorder) {
         }
     } else if (terrain === 'City') {
         // Rule 1.7.7
-        // TODO Will need to come back and add target select soon
         if ('Infantry' === unit.unitClass && side === 'Defend') {
             return 1;
         }

@@ -182,6 +182,15 @@ function getIfTargetSelect(battle, unit, side, diceRoll) {
                 'Fleet Carrier', 'Heavy Fleet Carrier', 'Naval Transport', 'Attack Transport']);
     }
 
+    // Fighters and Jet Fighters have air superiority in the first round
+    if (battle.round === 1 && ['Fighter', 'Jet Fighter'].indexOf(unit.name) != -1) {
+        if (unit.details.get(side) >= diceRoll) {
+            // It is a defender chosen target select
+            return new TargetSelect('Unit Class', ['Plane'], false);
+        }
+
+    }
+
     return undefined;
 }
 
@@ -265,7 +274,43 @@ function rollRoundForSide(battle, side, isFirstStrike) {
 
 function handleTargetSelects(army, hits) {
     let units = army.units;
+
+    // Handle Air Superiority first, with simple cheapest target first
+    // TODO Select (Heavy) Air Transports as the last unless airborne assaulting
     hits.targetSelects.forEach((target) => {
+        if (target.attackSelect) {
+            return;
+        }
+
+        // Take out the cheapest unit
+        let minIndex = undefined;
+        let minIpp = 999;
+        units.forEach((unit, index) => {
+            if (target.applies(unit)) {
+                if (unit.details.get('Cost') < minIpp) {
+                    minIndex = index;
+                    minIpp = unit.details.get('Cost');
+                }
+            }
+        });
+        if (minIndex) {
+            units[minIndex].quantity -= 1;
+            if (units[minIndex].quantity == 0) {
+                units.splice(minIndex,1);
+            }
+        } else {
+            if (!target.strict) {
+                hits.hits += 1;
+            }
+        }
+    });
+
+    // 10.5 Handle the regular target selects after air superiority
+    hits.targetSelects.forEach((target) => {
+        if (!target.attackSelect) {
+            return;
+        }
+
         // Take out the most expensive unit
         let maxIndex = undefined;
         let maxIpp = 0;
@@ -274,6 +319,7 @@ function handleTargetSelects(army, hits) {
                 if (target.applies(unit)) {
                     if (unit.details.get('Cost') > maxIpp) {
                         maxIndex = index;
+                        maxIpp = unit.details.get('Cost');
                     }
                 }
             });
@@ -289,8 +335,8 @@ function handleTargetSelects(army, hits) {
             }
         }
     });
-    return units;
 
+    return units;
 }
 
 function reconcileArmy(army, hits) {
