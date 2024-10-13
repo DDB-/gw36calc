@@ -23,7 +23,7 @@ class IppValues {
 function calculateIpps(army) {
     let ippValue = 0;
     army.units.forEach((unit) => {
-        ippValue += unit.details.get('Cost') * unit.quantity;
+        ippValue += unit.getCost() * unit.quantity;
     });
     return ippValue;
 }
@@ -287,9 +287,9 @@ function handleTargetSelects(army, hits) {
         let minIpp = 999;
         units.forEach((unit, index) => {
             if (target.applies(unit)) {
-                if (unit.details.get('Cost') < minIpp) {
+                if (unit.getCost() < minIpp) {
                     minIndex = index;
-                    minIpp = unit.details.get('Cost');
+                    minIpp = unit.getCost();
                 }
             }
         });
@@ -317,9 +317,9 @@ function handleTargetSelects(army, hits) {
         if (target.attackSelect) {
             units.forEach((unit, index) => {
                 if (target.applies(unit)) {
-                    if (unit.details.get('Cost') > maxIpp) {
+                    if (unit.getCost() > maxIpp) {
                         maxIndex = index;
-                        maxIpp = unit.details.get('Cost');
+                        maxIpp = unit.getCost();
                     }
                 }
             });
@@ -342,7 +342,7 @@ function handleTargetSelects(army, hits) {
 function reconcileArmy(army, hits) {
     let units = handleTargetSelects(army, hits);
     let sortedUnits = units.sort((a,b) => {
-        return a.details.get('Cost') - b.details.get('Cost');
+        return a.getCost() - b.getCost();
     });
 
     while (hits.hits > 0) {

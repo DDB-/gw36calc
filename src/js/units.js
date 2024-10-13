@@ -150,6 +150,7 @@ function getUnitDetails(unit) {
             details.set('Attack', 4);
             details.set('Defend', 6);
             details.set('Cost', 0);
+            details.set('Bombard', 2);
             break;
         case 'Light Cruiser':
             details.set('Attack', 5);
@@ -160,21 +161,25 @@ function getUnitDetails(unit) {
             details.set('Attack', 6);
             details.set('Defend', 6);
             details.set('Cost', [5, 5]);
+            details.set('Bombard', 2);
             break;
         case 'Battlecruiser':
             details.set('Attack', 7);
             details.set('Defend', 7);
             details.set('Cost', [7, 7]);
+            details.set('Bombard', 3);
             break;
         case 'Battleship':
             details.set('Attack', 8);
             details.set('Defend', 8);
             details.set('Cost', [6, 6, 6]);
+            details.set('Bombard', 4);
             break;
         case 'Heavy Battleship':
             details.set('Attack', 10);
             details.set('Defend', 10);
             details.set('Cost', [7, 7, 7]);
+            details.set('Bombard', 4);
             break;
         case 'Light Carrier':
             details.set('Attack', 0);
@@ -326,6 +331,14 @@ class Unit {
         this.quantity = quantity;
         this.unitClass = getUnitType(name);
         this.details = getUnitDetails(name);
+    }
+
+    getCost() {
+        const cost = this.details.get('Cost');
+        if (Array.isArray(cost)) {
+            return cost.reduce((a,b) => a + b);
+        }
+        return cost;
     }
 }
 

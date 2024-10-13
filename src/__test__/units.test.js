@@ -54,15 +54,21 @@ test('all units construct with values', () => {
             .toBeGreaterThanOrEqual(0)
             .toBeLessThan(12);
         
-        const cost = unit.details.get('Cost');
-        expect(cost).toBeDefined()
-        if (Array.isArray(cost)) {
-            cost.forEach((stageCost) => {
-                expect(stageCost).toBeGreaterThanOrEqual(0);
-            });
-        } else {
-            expect(cost).toBeGreaterThanOrEqual(0);
-        }
+        const cost = unit.getCost();
+        expect(cost)
+            .toBeDefined()
+            .toBeGreaterThanOrEqual(0);
         
     });
+});
+
+test('cost is calculated for single and multi stage units', () => {
+    const singleStage = makeUnit('Marine', 1);
+    expect(singleStage.getCost()).toBe(4);
+
+    const multiStage = makeUnit('Heavy Battleship', 1);
+    expect(multiStage.getCost()).toBe(21);
+
+    const zeroCost = makeUnit('Torpedo Boat Destroyer', 1);
+    expect(zeroCost.getCost()).toBe(0);
 });

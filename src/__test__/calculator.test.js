@@ -273,8 +273,8 @@ test('air superiority takes cheapest unit', () => {
     expect(defend.units.length).toBe(3);
     expect(defend.units[0].name).toBe('Fighter')
     expect(defend.units[0].quantity).toBe(1)
-    expect(defend.units[1].name).toBe('Jet Fighter')
-    expect(defend.units[1].quantity).toBe(1)
-    expect(defend.units[2].name).toBe('Heavy Cruiser')
-    expect(defend.units[2].quantity).toBe(3)
+    expect(defend.units[1].name).toBe('Heavy Cruiser')
+    expect(defend.units[1].quantity).toBe(3)
+    expect(defend.units[2].name).toBe('Jet Fighter')
+    expect(defend.units[2].quantity).toBe(1)
 })
