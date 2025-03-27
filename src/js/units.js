@@ -136,6 +136,8 @@ function getUnitDetails(unit) {
             details.set('Attack', 3);
             details.set('Defend', 3);
             details.set('Cost', 4);
+            details.set('FirstRoundOnly', true);
+            details.set('FirstRoundShots', 3);
         case 'Torpedo Boat Destroyer':
             details.set('Attack', 2);
             details.set('Defend', 2);

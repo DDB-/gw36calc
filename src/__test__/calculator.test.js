@@ -76,6 +76,18 @@ test('army reconciles by simple cost metric', () => {
     expect(army.units.length).toBe(0);
 });
 
+test('retreats not taken as casualties', () => {
+    let army = makeArmy(['Infantry', 'Artillery'], [2,2], 'Attack', true);
+    let hits = makeHits();
+
+    hits.hits = 1;
+    reconcileArmy(army, hits, {'Infantry': 2, 'Cavalry': 0});
+
+    expect(army.units.length).toBe(1);
+    expect(army.units[0].name).toBe('Artillery');
+    expect(army.units[0].quantity).toBe(1);
+});
+
 test('winner determined correctly and works with extra hits', () => {
     let attack = makeArmy(['Infantry', 'Artillery'], [6,2], 'Attack');
     let defend = makeArmy(['Militia'], [1], 'Defend');

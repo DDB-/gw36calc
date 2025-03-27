@@ -1,22 +1,22 @@
 class Army {
-    constructor(units, quantities, side) {
+    constructor(units, quantities, side, hasLowMorale = false) {
         this.side = side;
         this.boosts = 0;
-        this.units = [];
-        units.forEach((unit, index) => {
-            this.units.push(makeUnit(unit, quantities[index]));
-        });
+        this.units = units.map((unit, index) => makeUnit(unit, quantities[index]));
+        this.hasLowMorale = hasLowMorale;
+        this.totalRetreats = {'Infantry': 0, 'Cavalry': 0};
     }
 }
 
-function makeArmy(units, quantities, side) {
-    return new Army(units, quantities, side);
+function makeArmy(units, quantities, side, hasLowMorale) {
+    return new Army(units, quantities, side, hasLowMorale);
 }
 
 class IppValues {
     constructor(startingAttack, startingDefend) {
         this.startingAttack = startingAttack;
         this.startingDefend = startingDefend;
+        this.attackRetreats = 0;
     }
 }
 
@@ -24,6 +24,15 @@ function calculateIpps(army) {
     let ippValue = 0;
     army.units.forEach((unit) => {
         ippValue += unit.getCost() * unit.quantity;
+    });
+    return ippValue;
+}
+
+function calculateRetreatIpps(army) {
+    let ippValue = 0;
+    army.units.forEach((unit) => {
+        let retreatsToIgnore = army.totalRetreats[unit.name] ?? 0;
+        ippValue += unit.getCost() * retreatsToIgnore;
     });
     return ippValue;
 }
@@ -43,6 +52,7 @@ class Stats {
         this.defendWins = 0;
         this.attackIppLost = [];
         this.defendIppLost = [];
+        this.attackIppRetreated = [];
     };
 
     avgLoss(side) {
@@ -113,6 +123,7 @@ class Hits {
     constructor() {
         this.hits = 0;
         this.targetSelects = [];
+        this.retreats = {'Infantry': 0, 'Cavalry': 0};
     }
 }
 
@@ -259,6 +270,8 @@ function rollRoundForSide(battle, side, isFirstStrike) {
         for (let i = 0; i < unit.quantity; i++) {
             const diceRoll = roll();
             const resolvedValue = getUnitResolved(battle, army, unit);
+            // KMT Infantry and Cavalry retreat on 10s and higher if not major power
+            const lowMoraleEligible = (unit.name === 'Infantry' || unit.name === 'Cavalry') && army.hasLowMorale;
             if (diceRoll <= resolvedValue) {
                 const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
                 if (targetSelect) {
@@ -266,6 +279,9 @@ function rollRoundForSide(battle, side, isFirstStrike) {
                 } else {
                     hits.hits += 1;
                 }
+            } else if (lowMoraleEligible && diceRoll >= 10) { 
+                hits.retreats[unit.name] += 1;
+                army.totalRetreats[unit.name] += 1;
             }
         }
     });
@@ -339,7 +355,30 @@ function handleTargetSelects(army, hits) {
     return units;
 }
 
-function reconcileArmy(army, hits) {
+function handleRetreats(army, retreats) {
+    if (!retreats || (retreats['Infantry'] === 0 && retreats['Cavalry'] === 0)) {
+        return;
+    }
+
+    let units = army.units;
+
+    units.forEach((unit, index) => {
+        if (unit.name === 'Infantry' || unit.name === 'Cavalry') {
+            units[index].quantity -= retreats[unit.name];
+        }
+        // if 0 quantity, remove from list
+        if (units[index].quantity == 0) {
+            units.splice(index,1);
+        }
+    })
+}
+
+function reconcileArmy(army, hits, retreats) {
+    // 15.7 Low Morale
+    // Units that are forced to retreat may not be taken as casualties
+    // TODO handle these in the stats better
+    handleRetreats(army, retreats); 
+
     let units = handleTargetSelects(army, hits);
     let sortedUnits = units.sort((a,b) => {
         return a.getCost() - b.getCost();
@@ -376,6 +415,7 @@ function hasWinner(battle) {
 
     battle.ippValues.endingDefend = calculateIpps(battle.defend);
     battle.ippValues.endingAttack = calculateIpps(battle.attack);
+    battle.ippValues.attackRetreats = calculateRetreatIpps(battle.attack);
 
     return true;
 }
@@ -383,13 +423,13 @@ function hasWinner(battle) {
 function rollBattle(battle, stats) {
     let attackHits = rollRoundForSide(battle, 'Attack', true);
     let defendHits = rollRoundForSide(battle, 'Defend', true);
-    reconcileArmy(battle.attack, defendHits);
-    reconcileArmy(battle.defend, attackHits);
+    reconcileArmy(battle.attack, defendHits, attackHits.retreats);
+    reconcileArmy(battle.defend, attackHits, defendHits.retreats);
     while(!hasWinner(battle)) {
         let attackHits = rollRoundForSide(battle, 'Attack');
         let defendHits = rollRoundForSide(battle, 'Defend');
-        reconcileArmy(battle.attack, defendHits);
-        reconcileArmy(battle.defend, attackHits);
+        reconcileArmy(battle.attack, defendHits, attackHits.retreats);
+        reconcileArmy(battle.defend, attackHits, defendHits.retreats);
         battle.round += 1;
         battle.attack.boosts = 0;
         battle.defend.boosts = 0;
@@ -402,29 +442,30 @@ function updateStats(battle, stats) {
         stats.defendIppLost.push(
             battle.ippValues.startingDefend - battle.ippValues.endingDefend
         );
-        stats.attackIppLost.push(battle.ippValues.startingAttack);
+        stats.attackIppLost.push(battle.ippValues.startingAttack - battle.ippValues.attackRetreats);
         stats.defendWins += 1;
     } else if (battle.winner == 'Attack') {
         stats.attackIppLost.push(
-            battle.ippValues.startingAttack - battle.ippValues.endingAttack
+            battle.ippValues.startingAttack - battle.ippValues.endingAttack - battle.ippValues.attackRetreats
         );
         stats.defendIppLost.push(battle.ippValues.startingDefend);
         stats.attackWins += 1;
     } else {
         stats.ties += 1;
         stats.defendIppLost.push(battle.ippValues.startingDefend);
-        stats.attackIppLost.push(battle.ippValues.startingAttack);
+        stats.attackIppLost.push(battle.ippValues.startingAttack - battle.ippValues.attackRetreats);
     }
 }
 
 function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
-        selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain) {
+        selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain,
+        hasLowMorale) {
     const rounds = 10000;
     const stats = new Stats(rounds);
     const battleTerrains = getApplicableTerrains(selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
     for (let i = 0; i < stats.rounds; i++) {
         const battle = new Battle(
-            new Army(attackUnits, attackUnitsQ, 'Attack'),
+            new Army(attackUnits, attackUnitsQ, 'Attack', hasLowMorale),
             new Army(defendUnits, defendUnitsQ, 'Defend'),
             battleTerrains, isBorderTerrain
         );

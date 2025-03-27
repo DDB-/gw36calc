@@ -31,6 +31,7 @@
             hasRiver: false,
             hasSurroundedCity: false,
             hasCity: false,
+            hasLowMorale: false,
             city: '',
             showResult: false,
             stats: makeStats(1000),
@@ -196,11 +197,18 @@
                     Surrounded City
                 </label>
             </div>
+            <div class ="flex-box-row">
+                <label class="checkbox">
+                    <input type="checkbox" value="LowMorale" x-model="hasLowMorale">
+                    Low Morale
+                </label>
+            </div>
         </div>
         <div class="flex-parent">
             <input class="flex-button" type="button" value="Calculate", x-on:click="
                 stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
-                    selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain);
+                    selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain,
+                    hasLowMorale);
                 showResult = true;
             ">
         </div>
