@@ -41,18 +41,18 @@ function getUnitIndex(unit, unitList) {
     return -1;
 }
 
-function getUnitType(unit) {
-    if (infantry.indexOf(unit) != -1) {
+function getUnitType(unitName) {
+    if (infantry.indexOf(unitName) != -1) {
         return 'Infantry';
-    } else if (artillery.indexOf(unit) != -1) {
+    } else if (artillery.indexOf(unitName) != -1) {
         return 'Artillery';
-    } else if (vehicles.indexOf(unit) != -1) {
+    } else if (vehicles.indexOf(unitName) != -1) {
         return 'Vehicle';
-    } else if (planes.indexOf(unit) != -1) {
+    } else if (planes.indexOf(unitName) != -1) {
         return 'Plane';
-    } else if (boats.indexOf(unit) != -1) {
+    } else if (boats.indexOf(unitName) != -1) {
         return 'Boat';
-    } else if (aaguns.indexOf(unit) != -1) {
+    } else if (aaguns.indexOf(unitName) != -1) {
         return 'AntiAir';
     }
 
@@ -247,11 +247,15 @@ function getUnitDetails(unit) {
             details.set('Attack', 2);
             details.set('Defend', 2);
             details.set('Cost', 12);
+            details.set('FirstRoundOnly', true);
+            details.set('FirstRoundShots', 3);
             break;
         case 'Heavy Strategic Bomber':
             details.set('Attack', 2);
             details.set('Defend', 3);
             details.set('Cost', 13);
+            details.set('FirstRoundOnly', true);
+            details.set('FirstRoundShots', 5);
             break;
         case 'Seaplane':
             details.set('Attack', 3);
@@ -341,6 +345,10 @@ class Unit {
             return cost.reduce((a,b) => a + b);
         }
         return cost;
+    }
+
+    getUnitType() {
+        return getUnitType(this.name);
     }
 }
 

@@ -199,7 +199,14 @@ function getIfTargetSelect(battle, unit, side, diceRoll) {
             // It is a defender chosen target select
             return new TargetSelect('Unit Class', ['Plane'], false);
         }
+    }
 
+    // AA Guns shoot down airplanes in the first round
+    if (battle.round === 1 && unit.name === 'Anti Aircraft Artillery') {
+        if (unit.details.get(side) >= diceRoll) {
+            // It is a defender chosen target select
+            return new TargetSelect('Unit Class', ['Plane'], false);
+        }
     }
 
     return undefined;
@@ -256,32 +263,62 @@ function getUnitResolved(battle, army, unit) {
     return clamp(unit.details.get(army.side) + maxPositiveMod + maxNegativeMod, 1, 12);
 }
 
+function getNumberOfRolls(unit, enemyArmy) {
+    // Units that attack every round only get one attack
+    if (!unit.details.get('FirstRoundOnly')) {
+        return 1;
+    }
+
+    // 13.1.4 AA Guns shoot as many shots as there are enemy planes, up to 3
+    const enemyAircraftCount = enemyArmy.units
+        .filter(eu => eu.getUnitType() == 'Plane')
+        .reduce((sum, eu) => sum + eu.quantity, 0);
+
+    if (unit.name === 'Anti Aircraft Artillery') {
+       return Math.min(enemyAircraftCount, unit.details.get('FirstRoundShots'));
+    }
+
+    // Should just be (heavy) strat bombers left here, who shoot a constant amounts
+    return unit.details.get('FirstRoundShots') ?? 1; // Default just in case
+}
+
 function rollRoundForSide(battle, side, isFirstStrike) {
     const army = (side === 'Attack') ? battle.attack : battle.defend;
     const enemyArmy = (side === 'Attack') ? battle.defend : battle.attack;
     const hits = new Hits();
     army.boosts = getAvailableBoosts(army);
     army.units.forEach((unit) => {
+        // Return early if not first round and this unit only attacks in round one
+        const firstRoundOnly = unit.details.get('FirstRoundOnly') ?? false;
+        if (battle.round === 1 && firstRoundOnly) {
+            return;
+        }
+
         if (battle.round === 1 && hasFirstStrike(unit, enemyArmy)) {
             if (!isFirstStrike) return; // First strike units have already gone this round
         } else {
             if (isFirstStrike) return; // If not a first strike, then don't roll first strike
         }
+
         for (let i = 0; i < unit.quantity; i++) {
-            const diceRoll = roll();
             const resolvedValue = getUnitResolved(battle, army, unit);
             // KMT Infantry and Cavalry retreat on 10s and higher if not major power
             const lowMoraleEligible = (unit.name === 'Infantry' || unit.name === 'Cavalry') && army.hasLowMorale;
-            if (diceRoll <= resolvedValue) {
-                const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
-                if (targetSelect) {
-                    hits.targetSelects.push(targetSelect);
-                } else {
-                    hits.hits += 1;
+
+            const totalRolls = getNumberOfRolls(unit, enemyArmy);
+            for (let j = 0; j < totalRolls; j++) {
+                const diceRoll = roll();
+                if (diceRoll <= resolvedValue) {
+                    const targetSelect = getIfTargetSelect(battle, unit, side, diceRoll);
+                    if (targetSelect) {
+                        hits.targetSelects.push(targetSelect);
+                    } else {
+                        hits.hits += 1;
+                    }
+                } else if (lowMoraleEligible && diceRoll >= 10) {
+                    hits.retreats[unit.name] += 1;
+                    army.totalRetreats[unit.name] += 1;
                 }
-            } else if (lowMoraleEligible && diceRoll >= 10) { 
-                hits.retreats[unit.name] += 1;
-                army.totalRetreats[unit.name] += 1;
             }
         }
     });

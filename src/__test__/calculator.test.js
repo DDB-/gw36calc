@@ -290,3 +290,22 @@ test('air superiority takes cheapest unit', () => {
     expect(defend.units[2].name).toBe('Jet Fighter')
     expect(defend.units[2].quantity).toBe(1)
 })
+
+test('units that attack multiple times, in the first round only', () => {
+    let enemyArmy = makeArmy(['Fighter', 'Jet Fighter'], [2,2], 'Defend');
+
+    const stratBomber = makeUnit('Strategic Bomber', 1);
+    expect(getNumberOfRolls(stratBomber, enemyArmy)).toBe(3);
+
+    const heavyStratBomber = makeUnit('Heavy Strategic Bomber', 1);
+    expect(getNumberOfRolls(heavyStratBomber, enemyArmy)).toBe(5);
+
+    const aaGun = makeUnit('Anti Aircraft Artillery', 1);
+    expect(getNumberOfRolls(aaGun, enemyArmy)).toBe(3);
+
+    enemyArmy = makeArmy(['Fighter', 'Jet Fighter'], [1,1], 'Defend');
+    expect(getNumberOfRolls(aaGun, enemyArmy)).toBe(2);
+
+    enemyArmy = makeArmy(['Fighter'], [1], 'Defend');
+    expect(getNumberOfRolls(aaGun, enemyArmy)).toBe(1);
+});
