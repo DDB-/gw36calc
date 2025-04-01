@@ -161,7 +161,8 @@ function makeTargetSelect(targetType, targets, attackSelect, strict) {
 
 function getIfTargetSelect(battle, unit, side, diceRoll) {
     // 1.7.7 Infantry class units defending a city target select
-    if (side === 'Defend' && unit.unitClass === 'Infantry' && diceRoll === 1) {
+    if (side === 'Defend' && unit.unitClass === 'Infantry'
+        && diceRoll === 1 && battle.terrains.includes('City')) {
         return new TargetSelect('Unit Class', ['Vehicle']);
     }
 
@@ -180,8 +181,10 @@ function getIfTargetSelect(battle, unit, side, diceRoll) {
             'Artillery', 'AntiAir', 'Boat']);
     }
 
+    // Beta Rule: Jet Fighters can't be target selected by Light Cruisers
     if (unit.name === 'Light Cruiser' && diceRoll <= 3) {
-        return new TargetSelect('Unit Class', ['Plane']);
+        return new TargetSelect('Unit Name', ['Fighter', 'Tactical Bomber',
+            'Medium Bomber', 'Strategic Bomber', 'Heavy Strategic Bomber']);
     }
 
     // submarines get target select on 1 against surface ships

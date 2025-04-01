@@ -136,7 +136,7 @@ test('target selects correctly determined if they apply', () => {
     expect(targetSelect.applies(makeUnit('Militia', 1))).toBeFalsy();
 });
 
-test('get target select for an attack against a city', () => {
+test('get target select for infantry and city', () => {
     let attack = makeArmy(['Infantry', 'Artillery', 'Medium Tank'], [6,2,2], 'Attack');
     let defend = makeArmy(['Infantry', 'Light Tank', 'Militia'], [3,1,4], 'Defend');
     let battle = makeBattle(attack, defend, ['City']);
@@ -152,6 +152,16 @@ test('get target select for an attack against a city', () => {
         } else {
             expect(getIfTargetSelect(battle, unit, 'Defend', 1)).toBeUndefined();
         }
+    });
+
+    // Only non surrounded cities get the target select bonus
+    let terrains = ['Normal', 'Mountains', 'Desert', 'Jungle', 'Marshes',
+        'Tundra/Ice', 'Surrounded City'];
+    terrains.forEach((terrain) => {
+        battle = makeBattle(attack, defend, [terrain]);
+        battle.defend.units.forEach((unit) => {
+            expect(getIfTargetSelect(battle, unit, 'Defend', 1)).toBeUndefined();
+        });
     });
 });
 
@@ -264,9 +274,10 @@ test('get unit resolved with infantry boost', () => {
     });
 });
 
-test('air superiority takes cheapest unit', () => {
+test('air superiority and light cruiser take correct units', () => {
     let attack = makeArmy(['Fighter', 'Light Cruiser'], [2,2], 'Attack');
-    let defend = makeArmy(['Fighter', 'Jet Fighter', 'Heavy Cruiser'], [2,2,3], 'Defend');
+    let defend = makeArmy(['Fighter', 'Tactical Bomber',
+        'Jet Fighter', 'Heavy Cruiser'], [2,2,1,3], 'Defend');
     let battle = makeBattle(attack, defend);
 
     let fighter = attack.units[0];
@@ -282,13 +293,15 @@ test('air superiority takes cheapest unit', () => {
 
     // Air superiority will take a Fighter, target select from Light Cruiser takes the Jet Fighter
     reconcileArmy(defend, hits);
-    expect(defend.units.length).toBe(3);
+    expect(defend.units.length).toBe(4);
     expect(defend.units[0].name).toBe('Fighter')
     expect(defend.units[0].quantity).toBe(1)
     expect(defend.units[1].name).toBe('Heavy Cruiser')
     expect(defend.units[1].quantity).toBe(3)
-    expect(defend.units[2].name).toBe('Jet Fighter')
+    expect(defend.units[2].name).toBe('Tactical Bomber')
     expect(defend.units[2].quantity).toBe(1)
+    expect(defend.units[3].name).toBe('Jet Fighter')
+    expect(defend.units[3].quantity).toBe(1)
 })
 
 test('units that attack multiple times, in the first round only', () => {
