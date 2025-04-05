@@ -2,6 +2,8 @@
     display: flex;
     width: 70%;
     justify-content: center;
+    margin: 0 auto;
+    max-width: 850px;
 }
 
 .flex-button {
@@ -17,6 +19,22 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+}
+
+.flex-swap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.battle-column {
+    flex: 0 0 400px;
+    overflow: auto;
+}
+
+.table-column {
+    display: flex;
+    justify-content: center;
 }
 
 .row {
@@ -91,7 +109,7 @@
     margin: 0 auto;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
     body {
         overflow-x: auto;
     }
@@ -99,6 +117,12 @@
     table {
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .battle-column,
+    .flex-swap {
+        flex: initial;
+        margin: 0;
     }
 
     .flex-parent {
@@ -109,6 +133,13 @@
     .flex-button {
         flex: 0 0 50%;
         width: 50%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .flex-small-button {
+        flex: 0 0 25%;
+        width: 25%;
         margin-left: auto;
         margin-right: auto;
     }
