@@ -1,3 +1,11 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 .flex-parent {
     display: flex;
     width: 70%;
@@ -119,10 +127,15 @@
         margin-right: auto;
     }
 
-    .battle-column,
+    .battle-column {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
     .flex-swap {
-        flex: initial;
-        margin: 0;
+        margin: 10px 0;
     }
 
     .flex-parent {
@@ -135,9 +148,5 @@
         width: 50%;
         margin-left: auto;
         margin-right: auto;
-    }
-
-    .container {
-        width: 120%;
     }
 }
