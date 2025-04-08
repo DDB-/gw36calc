@@ -102,7 +102,7 @@ function makeStats(rounds) {
 }
 
 class Battle {
-    constructor(attack, defend, terrains, isBorder) {
+    constructor(attack, defend, terrains, isBorder, isOneRoundOnly = false) {
         this.attack = attack;
         this.defend = defend;
         this.terrains = terrains;
@@ -112,6 +112,7 @@ class Battle {
         this.ippValues = new IppValues(
             calculateIpps(attack), calculateIpps(defend)
         );
+        this.isOneRoundOnly = isOneRoundOnly;
     }
 }
 
@@ -473,11 +474,23 @@ function rollBattle(battle, stats) {
         battle.round += 1;
         battle.attack.boosts = 0;
         battle.defend.boosts = 0;
+
+        // Just exit early if they want one round only
+        if (battle.isOneRoundOnly) {
+            break;
+        }
     }
     updateStats(battle, stats);
 }
 
 function updateStats(battle, stats) {
+    // If we do one round only, calculate end values only done
+    if (battle.isOneRoundOnly) {
+        battle.ippValues.endingDefend = calculateIpps(battle.defend);
+        battle.ippValues.endingAttack = calculateIpps(battle.attack);
+        battle.ippValues.attackRetreats = calculateRetreatIpps(battle.attack);
+    }
+
     if (battle.winner == 'Defend') {
         stats.defendIppLost.push(
             battle.ippValues.startingDefend - battle.ippValues.endingDefend
@@ -486,20 +499,24 @@ function updateStats(battle, stats) {
         stats.defendWins += 1;
     } else if (battle.winner == 'Attack') {
         stats.attackIppLost.push(
-            battle.ippValues.startingAttack - battle.ippValues.endingAttack - battle.ippValues.attackRetreats
+            battle.ippValues.startingAttack - battle.ippValues.endingAttack
         );
         stats.defendIppLost.push(battle.ippValues.startingDefend);
         stats.attackWins += 1;
     } else {
         stats.ties += 1;
-        stats.defendIppLost.push(battle.ippValues.startingDefend);
-        stats.attackIppLost.push(battle.ippValues.startingAttack - battle.ippValues.attackRetreats);
+        stats.defendIppLost.push(
+            battle.ippValues.startingDefend - battle.ippValues.endingDefend
+        );
+        stats.attackIppLost.push(
+            battle.ippValues.startingAttack - battle.ippValues.endingAttack
+        );
     }
 }
 
 function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
         selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain,
-        hasLowMorale) {
+        hasLowMorale, isOneRoundOnly) {
     const rounds = 10000;
     const stats = new Stats(rounds);
     const battleTerrains = getApplicableTerrains(selectedTerrain, hasRiver, hasCity, hasSurroundedCity);
@@ -507,7 +524,7 @@ function simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
         const battle = new Battle(
             new Army(attackUnits, attackUnitsQ, 'Attack', hasLowMorale),
             new Army(defendUnits, defendUnitsQ, 'Defend'),
-            battleTerrains, isBorderTerrain
+            battleTerrains, isBorderTerrain, isOneRoundOnly
         );
         rollBattle(battle, stats);
     }

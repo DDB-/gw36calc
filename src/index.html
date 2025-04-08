@@ -32,6 +32,7 @@
             hasSurroundedCity: false,
             hasCity: false,
             hasLowMorale: false,
+            isOneRoundOnly: false,
             city: '',
             showResult: false,
             stats: makeStats(1000),
@@ -212,19 +213,23 @@
                     <input type="checkbox" value="LowMorale" x-model="hasLowMorale">
                     Low Morale
                 </label>
+                <label class="checkbox">
+                    <input type="checkbox" value="OneRound" x-model="isOneRoundOnly">
+                    One Round Only
+                </label>
             </div>
         </div>
         <div class="flex-parent">
             <input class="flex-button" type="button" value="Calculate", x-on:click="
                 stats = simulate(attackUnits, attackUnitsQ, defendUnits, defendUnitsQ,
                     selectedTerrain, hasRiver, hasCity, hasSurroundedCity, isBorderTerrain,
-                    hasLowMorale);
+                    hasLowMorale, isOneRoundOnly);
                 showResult = true;
             ">
         </div>
         <div class="flex-parent">
             <div class="flex-result-container" x-show="showResult">
-                <div class="flex-row-box">
+                <div class="flex-row-box" x-show="!isOneRoundOnly">
                     <div class="row attack percent-win" x-text="stats.winDisplay('Attack')"></div>
                     <div class="row defend percent-win" x-text="stats.winDisplay('Defend')"></div>
                 </div>
